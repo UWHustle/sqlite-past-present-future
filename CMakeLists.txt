@@ -6,6 +6,13 @@ set(CMAKE_CXX_STANDARD 17)
 include(FetchContent)
 
 FetchContent_Declare(
+        txbench
+        GIT_REPOSITORY https://github.com/UWHustle/txbench.git
+        GIT_TAG tatp-refinements
+)
+FetchContent_MakeAvailable(txbench)
+
+FetchContent_Declare(
         sqlite3
         URL https://www.sqlite.org/2022/sqlite-amalgamation-3370200.zip
         URL_HASH SHA3_256=7f535314ac30f1c7847df2a66a9e16a322f55dae6e83b264178cf02114cd0617
@@ -13,11 +20,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sqlite3)
 
 FetchContent_Declare(
-        txbench
-        GIT_REPOSITORY https://github.com/UWHustle/txbench.git
-        GIT_TAG tatp-refinements
+        duckdb
+        URL https://github.com/duckdb/duckdb/releases/download/v0.3.1/libduckdb-src.zip
 )
-FetchContent_MakeAvailable(txbench)
+FetchContent_MakeAvailable(duckdb)
 
 add_library(sqlite3 ${sqlite3_SOURCE_DIR}/sqlite3.c)
 target_compile_options(
@@ -38,6 +44,12 @@ target_compile_options(
         -DSQLITE_DEFAULT_CACHE_SIZE=-1048576
 )
 
-add_executable(tatp_sqlite3 tatp_sqlite3.cpp)
+add_library(duckdb ${duckdb_SOURCE_DIR}/duckdb.cpp)
+
+add_executable(tatp_sqlite3 benchmarks/tatp_sqlite3.cpp)
 target_include_directories(tatp_sqlite3 BEFORE PRIVATE ${sqlite3_SOURCE_DIR})
 target_link_libraries(tatp_sqlite3 txbench::tatp sqlite3)
+
+add_executable(tatp_duckdb benchmarks/tatp_duckdb.cpp)
+target_include_directories(tatp_duckdb BEFORE PRIVATE ${duckdb_SOURCE_DIR})
+target_link_libraries(tatp_duckdb txbench::tatp duckdb)
