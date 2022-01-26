@@ -177,86 +177,91 @@ public:
                             -1, &stmts_[0], nullptr);
     assert(rc == SQLITE_OK);
 
-    rc = sqlite3_prepare(db_,
-                         "SELECT cf.numberx "
-                         "FROM special_facility AS sf, "
-                         "  call_forwarding AS cf "
-                         "WHERE sf.s_id = ? "
-                         "  AND sf.sf_type = ? "
-                         "  AND sf.is_active = 1 "
-                         "  AND cf.s_id = sf.s_id "
-                         "  AND cf.sf_type = sf.sf_type "
-                         "  AND cf.start_time <= ? "
-                         "  AND ? < cf.end_time",
-                         -1, &stmts_[1], nullptr);
+    rc = sqlite3_prepare_v2(db_,
+                            "SELECT cf.numberx "
+                            "FROM special_facility AS sf, "
+                            "  call_forwarding AS cf "
+                            "WHERE sf.s_id = ? "
+                            "  AND sf.sf_type = ? "
+                            "  AND sf.is_active = 1 "
+                            "  AND cf.s_id = sf.s_id "
+                            "  AND cf.sf_type = sf.sf_type "
+                            "  AND cf.start_time <= ? "
+                            "  AND ? < cf.end_time",
+                            -1, &stmts_[1], nullptr);
     assert(rc == SQLITE_OK);
 
-    rc = sqlite3_prepare(db_,
-                         "SELECT data1, data2, data3, data4 "
-                         "FROM access_info "
-                         "WHERE s_id = ? "
-                         "  AND ai_type = ?",
-                         -1, &stmts_[2], nullptr);
+    rc = sqlite3_prepare_v2(db_,
+                            "SELECT data1, data2, data3, data4 "
+                            "FROM access_info "
+                            "WHERE s_id = ? "
+                            "  AND ai_type = ?",
+                            -1, &stmts_[2], nullptr);
     assert(rc == SQLITE_OK);
 
-    rc = sqlite3_prepare(db_,
-                         "UPDATE subscriber "
-                         "SET bit_1 = ? "
-                         "WHERE s_id = ?",
-                         -1, &stmts_[3], nullptr);
+    rc = sqlite3_prepare_v2(db_,
+                            "UPDATE subscriber "
+                            "SET bit_1 = ? "
+                            "WHERE s_id = ?",
+                            -1, &stmts_[3], nullptr);
     assert(rc == SQLITE_OK);
 
-    rc = sqlite3_prepare(db_,
-                         "UPDATE special_facility "
-                         "SET data_a = ? "
-                         "WHERE s_id = ? "
-                         "  AND sf_type = ?",
-                         -1, &stmts_[4], nullptr);
+    rc = sqlite3_prepare_v2(db_,
+                            "UPDATE special_facility "
+                            "SET data_a = ? "
+                            "WHERE s_id = ? "
+                            "  AND sf_type = ?",
+                            -1, &stmts_[4], nullptr);
     assert(rc == SQLITE_OK);
 
-    rc = sqlite3_prepare(db_,
-                         "UPDATE subscriber "
-                         "SET vlr_location = ? "
-                         "WHERE sub_nbr = ?",
-                         -1, &stmts_[5], nullptr);
+    rc = sqlite3_prepare_v2(db_,
+                            "UPDATE subscriber "
+                            "SET vlr_location = ? "
+                            "WHERE sub_nbr = ?",
+                            -1, &stmts_[5], nullptr);
     assert(rc == SQLITE_OK);
 
-    rc = sqlite3_prepare(db_,
-                         "SELECT s_id "
-                         "FROM subscriber "
-                         "WHERE sub_nbr = ?",
-                         -1, &stmts_[6], nullptr);
+    rc = sqlite3_prepare_v2(db_,
+                            "SELECT s_id "
+                            "FROM subscriber "
+                            "WHERE sub_nbr = ?",
+                            -1, &stmts_[6], nullptr);
     assert(rc == SQLITE_OK);
 
-    rc = sqlite3_prepare(db_,
-                         "SELECT sf_type "
-                         "FROM special_facility "
-                         "WHERE s_id = ?",
-                         -1, &stmts_[7], nullptr);
+    rc = sqlite3_prepare_v2(db_,
+                            "SELECT sf_type "
+                            "FROM special_facility "
+                            "WHERE s_id = ?",
+                            -1, &stmts_[7], nullptr);
     assert(rc == SQLITE_OK);
 
-    rc = sqlite3_prepare(db_,
-                         "INSERT INTO call_forwarding "
-                         "VALUES (?, ?, ?, ?, ?)",
-                         -1, &stmts_[8], nullptr);
+    rc = sqlite3_prepare_v2(db_,
+                            "INSERT INTO call_forwarding "
+                            "VALUES (?, ?, ?, ?, ?)",
+                            -1, &stmts_[8], nullptr);
     assert(rc == SQLITE_OK);
 
-    rc = sqlite3_prepare(db_,
-                         "DELETE FROM call_forwarding "
-                         "WHERE s_id = ?"
-                         "  AND sf_type = ?"
-                         "  AND start_time = ?",
-                         -1, &stmts_[9], nullptr);
+    rc = sqlite3_prepare_v2(db_,
+                            "DELETE FROM call_forwarding "
+                            "WHERE s_id = ?"
+                            "  AND sf_type = ?"
+                            "  AND start_time = ?",
+                            -1, &stmts_[9], nullptr);
     assert(rc == SQLITE_OK);
 
-    rc = sqlite3_prepare(db_, "BEGIN", -1, &stmts_[10], nullptr);
+    rc = sqlite3_prepare_v2(db_, "BEGIN", -1, &stmts_[10], nullptr);
     assert(rc == SQLITE_OK);
 
-    rc = sqlite3_prepare(db_, "COMMIT", -1, &stmts_[11], nullptr);
+    rc = sqlite3_prepare_v2(db_, "COMMIT", -1, &stmts_[11], nullptr);
     assert(rc == SQLITE_OK);
   }
 
-  ~SQLite3TATPClientConnection() override { sqlite3_close(db_); }
+  ~SQLite3TATPClientConnection() override {
+    for (sqlite3_stmt *stmt : stmts_) {
+      sqlite3_finalize(stmt);
+    }
+    sqlite3_close(db_);
+  }
 
   ReturnCode get_subscriber_data(int s_id, std::string *sub_nbr,
                                  std::array<bool, 10> &bit,
@@ -489,7 +494,6 @@ public:
 
     // Insert call_forwarding.
     rc = sqlite3_step(stmts_[8]);
-    std::cout << sqlite3_errmsg(db_) << std::endl;
     assert(rc == SQLITE_DONE && sqlite3_changes(db_) == 1 ||
            rc == SQLITE_CONSTRAINT && sqlite3_changes(db_) == 0);
 
