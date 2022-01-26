@@ -1,6 +1,6 @@
-#include "readstr.h"
+#include "readstr.hpp"
 #include "sqlite3.h"
-#include "txbench/benchmarks/tatp.h"
+#include "txbench/benchmarks/tatp.hpp"
 
 #include <array>
 #include <iostream>

@@ -1,5 +1,5 @@
-#ifndef SQLITE_PERFORMANCE_READSTR_H
-#define SQLITE_PERFORMANCE_READSTR_H
+#ifndef SQLITE_PERFORMANCE_READSTR_HPP
+#define SQLITE_PERFORMANCE_READSTR_HPP
 
 #include <fstream>
 #include <sstream>
@@ -16,4 +16,4 @@ std::string readstr(const std::string &path) {
   return stream.str();
 }
 
-#endif // SQLITE_PERFORMANCE_READSTR_H
+#endif // SQLITE_PERFORMANCE_READSTR_HPP
