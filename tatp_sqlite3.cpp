@@ -1,4 +1,4 @@
-#include "systems/sqlite-3370200/sqlite3.h"
+#include "sqlite3.h"
 #include "txbench/benchmarks/tatp.h"
 
 #include <array>
