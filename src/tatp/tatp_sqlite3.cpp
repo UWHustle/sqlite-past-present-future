@@ -1,3 +1,4 @@
+#include "readstr.h"
 #include "sqlite3.h"
 #include "txbench/benchmarks/tatp.h"
 
@@ -16,75 +17,8 @@ public:
     rc = sqlite3_open(filename.c_str(), &db_);
     assert(rc == SQLITE_OK);
 
-    rc =
-        sqlite3_exec(db_, "PRAGMA journal_mode=WAL", nullptr, nullptr, nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_exec(db_, "DROP TABLE IF EXISTS call_forwarding", nullptr,
-                      nullptr, nullptr);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_exec(db_, "DROP TABLE IF EXISTS special_facility", nullptr,
-                      nullptr, nullptr);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_exec(db_, "DROP TABLE IF EXISTS access_info", nullptr, nullptr,
-                      nullptr);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_exec(db_, "DROP TABLE IF EXISTS subscriber", nullptr, nullptr,
-                      nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_exec(
-        db_,
-        "CREATE TABLE subscriber (s_id INTEGER PRIMARY KEY, "
-        "  sub_nbr TEXT, "
-        "  bit_1 INTEGER, bit_2 INTEGER, bit_3 INTEGER, bit_4 INTEGER, "
-        "  bit_5 INTEGER, bit_6 INTEGER, bit_7 INTEGER, bit_8 INTEGER, "
-        "  bit_9 INTEGER, bit_10 INTEGER, "
-        "  hex_1 INTEGER, hex_2 INTEGER, hex_3 INTEGER, hex_4 INTEGER, "
-        "  hex_5 INTEGER, hex_6 INTEGER, hex_7 INTEGER, hex_8 INTEGER, "
-        "  hex_9 INTEGER, hex_10 INTEGER, "
-        "  byte2_1 INTEGER, byte2_2 INTEGER, byte2_3 INTEGER, byte2_4 INTEGER, "
-        "  byte2_5 INTEGER, byte2_6 INTEGER, byte2_7 INTEGER, byte2_8 INTEGER, "
-        "  byte2_9 INTEGER, byte2_10 INTEGER, "
-        "  msc_location INTEGER, vlr_location INTEGER)",
-        nullptr, nullptr, nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_exec(db_,
-                      "CREATE TABLE access_info (s_id INTEGER NOT NULL, "
-                      "  ai_type INTEGER NOT NULL, "
-                      "  data1 INTEGER, data2 INTEGER, data3 TEXT, data4 TEXT, "
-                      "  PRIMARY KEY (s_id, ai_type), "
-                      "  FOREIGN KEY (s_id) REFERENCES subscriber (s_id)"
-                      ")",
-                      nullptr, nullptr, nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_exec(db_,
-                      "CREATE TABLE special_facility (s_id INTEGER NOT NULL, "
-                      "  sf_type INTEGER NOT NULL, "
-                      "  is_active INTEGER, error_cntrl INTEGER, "
-                      "  data_a INTEGER, data_b TEXT, "
-                      "  PRIMARY KEY (s_id, sf_type), "
-                      "  FOREIGN KEY (s_id) REFERENCES subscriber (s_id))",
-                      nullptr, nullptr, nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_exec(db_,
-                      "CREATE TABLE call_forwarding (s_id INTEGER NOT NULL, "
-                      "  sf_type INTEGER NOT NULL, "
-                      "  start_time INTEGER NOT NULL, "
-                      "  end_time INTEGER, numberx TEXT, "
-                      "  PRIMARY KEY (s_id, sf_type, start_time), "
-                      "  FOREIGN KEY (s_id, sf_type) "
-                      "  REFERENCES special_facility(s_id, sf_type))",
-                      nullptr, nullptr, nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_exec(db_,
-                      "CREATE INDEX subscriber_sub_nbr_idx "
-                      "ON subscriber (sub_nbr)",
-                      nullptr, nullptr, nullptr);
+    std::string init_sql = readstr("sql/init/sqlite3.sql");
+    rc = sqlite3_exec(db_, init_sql.c_str(), nullptr, nullptr, nullptr);
     assert(rc == SQLITE_OK);
   }
 
@@ -170,84 +104,13 @@ public:
     rc = sqlite3_open(filename.c_str(), &db_);
     assert(rc == SQLITE_OK);
 
-    rc = sqlite3_prepare_v2(db_,
-                            "SELECT * "
-                            "FROM subscriber "
-                            "WHERE s_id = ?",
-                            -1, &stmts_[0], nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_prepare_v2(db_,
-                            "SELECT cf.numberx "
-                            "FROM special_facility AS sf, "
-                            "  call_forwarding AS cf "
-                            "WHERE sf.s_id = ? "
-                            "  AND sf.sf_type = ? "
-                            "  AND sf.is_active = 1 "
-                            "  AND cf.s_id = sf.s_id "
-                            "  AND cf.sf_type = sf.sf_type "
-                            "  AND cf.start_time <= ? "
-                            "  AND ? < cf.end_time",
-                            -1, &stmts_[1], nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_prepare_v2(db_,
-                            "SELECT data1, data2, data3, data4 "
-                            "FROM access_info "
-                            "WHERE s_id = ? "
-                            "  AND ai_type = ?",
-                            -1, &stmts_[2], nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_prepare_v2(db_,
-                            "UPDATE subscriber "
-                            "SET bit_1 = ? "
-                            "WHERE s_id = ?",
-                            -1, &stmts_[3], nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_prepare_v2(db_,
-                            "UPDATE special_facility "
-                            "SET data_a = ? "
-                            "WHERE s_id = ? "
-                            "  AND sf_type = ?",
-                            -1, &stmts_[4], nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_prepare_v2(db_,
-                            "UPDATE subscriber "
-                            "SET vlr_location = ? "
-                            "WHERE sub_nbr = ?",
-                            -1, &stmts_[5], nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_prepare_v2(db_,
-                            "SELECT s_id "
-                            "FROM subscriber "
-                            "WHERE sub_nbr = ?",
-                            -1, &stmts_[6], nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_prepare_v2(db_,
-                            "SELECT sf_type "
-                            "FROM special_facility "
-                            "WHERE s_id = ?",
-                            -1, &stmts_[7], nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_prepare_v2(db_,
-                            "INSERT INTO call_forwarding "
-                            "VALUES (?, ?, ?, ?, ?)",
-                            -1, &stmts_[8], nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_prepare_v2(db_,
-                            "DELETE FROM call_forwarding "
-                            "WHERE s_id = ?"
-                            "  AND sf_type = ?"
-                            "  AND start_time = ?",
-                            -1, &stmts_[9], nullptr);
-    assert(rc == SQLITE_OK);
+    for (int i = 0; i <= 9; ++i) {
+      std::ostringstream stmt_path;
+      stmt_path << "sql/stmt_" << i << ".sql";
+      std::string stmt = readstr(stmt_path.str());
+      rc = sqlite3_prepare_v2(db_, stmt.c_str(), -1, &stmts_[i], nullptr);
+      assert(rc == SQLITE_OK);
+    }
 
     rc = sqlite3_prepare_v2(db_, "BEGIN", -1, &stmts_[10], nullptr);
     assert(rc == SQLITE_OK);

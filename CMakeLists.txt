@@ -46,10 +46,22 @@ target_compile_options(
 
 add_library(duckdb ${duckdb_SOURCE_DIR}/duckdb.cpp)
 
-add_executable(tatp_sqlite3 benchmarks/tatp_sqlite3.cpp)
-target_include_directories(tatp_sqlite3 BEFORE PRIVATE ${sqlite3_SOURCE_DIR})
-target_link_libraries(tatp_sqlite3 txbench::tatp sqlite3)
+file(COPY src/tatp/sql DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/tatp)
 
-add_executable(tatp_duckdb benchmarks/tatp_duckdb.cpp)
-target_include_directories(tatp_duckdb BEFORE PRIVATE ${duckdb_SOURCE_DIR})
-target_link_libraries(tatp_duckdb txbench::tatp duckdb)
+add_executable(tatp_sqlite3 src/tatp/tatp_sqlite3.cpp)
+target_include_directories(
+        tatp_sqlite3
+        BEFORE PRIVATE
+        ${sqlite3_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+target_link_libraries(tatp_sqlite3 txbench::tatp sqlite3)
+set_target_properties(
+        tatp_sqlite3
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tatp
+)
+
+#add_executable(tatp_duckdb benchmarks/tatp_duckdb.cpp)
+#target_include_directories(tatp_duckdb BEFORE PRIVATE ${duckdb_SOURCE_DIR})
+#target_link_libraries(tatp_duckdb txbench::tatp duckdb)
