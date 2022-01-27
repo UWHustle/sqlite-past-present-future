@@ -110,6 +110,11 @@ public:
     assert_sqlite_ok(rc);
   }
 
+  void bind_int64(int i, long long arg) {
+    int rc = sqlite3_bind_int64(stmt_, i + 1, arg);
+    assert_sqlite_ok(rc);
+  }
+
   void bind_text(int i, const char *arg) {
     int rc = sqlite3_bind_text(stmt_, i + 1, arg, -1, nullptr);
     assert_sqlite_ok(rc);
@@ -130,6 +135,8 @@ public:
   }
 
   int column_int(int i) { return sqlite3_column_int(stmt_, i); }
+
+  long long column_int64(int i) { return sqlite3_column_int64(stmt_, i); }
 
   const unsigned char *column_text(int i) {
     return sqlite3_column_text(stmt_, i);

@@ -41,38 +41,47 @@ class DuckDBTATPClientConnection : public TATPClientConnection {
 public:
   explicit DuckDBTATPClientConnection(duckdb::DuckDB &db) : con_(db) {}
 
-  ReturnCode get_subscriber_data(int s_id, std::string *sub_nbr,
+  ReturnCode get_subscriber_data(unsigned long long int s_id,
+                                 std::string *sub_nbr,
                                  std::array<bool, 10> &bit,
-                                 std::array<int, 10> &hex,
-                                 std::array<int, 10> &byte2, int *msc_location,
-                                 int *vlr_location) override {
-    return TXBENCH_FAILURE;
+                                 std::array<unsigned short, 10> &hex,
+                                 std::array<unsigned short, 10> &byte2,
+                                 unsigned long *msc_location,
+                                 unsigned long *vlr_location) override {
+    return TXBENCH_MISSING;
   }
-  ReturnCode get_new_destination(int s_id, int sf_type, int start_time,
-                                 int end_time,
+  ReturnCode get_new_destination(unsigned long long int s_id,
+                                 unsigned short sf_type,
+                                 unsigned short start_time,
+                                 unsigned short end_time,
                                  std::vector<std::string> *numberx) override {
-    return TXBENCH_FAILURE;
+    return TXBENCH_MISSING;
   }
-  ReturnCode get_access_data(int s_id, int ai_type, int *data1, int *data2,
-                             std::string *data3, std::string *data4) override {
-    return TXBENCH_FAILURE;
+  ReturnCode get_access_data(unsigned long long int s_id,
+                             unsigned short ai_type, unsigned short *data1,
+                             unsigned short *data2, std::string *data3,
+                             std::string *data4) override {
+    return TXBENCH_MISSING;
   }
-  ReturnCode update_subscriber_data(int s_id, bool bit_1, int sf_type,
-                                    int data_a) override {
-    return TXBENCH_FAILURE;
+  ReturnCode update_subscriber_data(unsigned long long int s_id, bool bit_1,
+                                    unsigned short sf_type,
+                                    unsigned short data_a) override {
+    return TXBENCH_MISSING;
   }
   ReturnCode update_location(const std::string &sub_nbr,
-                             int vlr_location) override {
-    return TXBENCH_FAILURE;
+                             unsigned long vlr_location) override {
+    return TXBENCH_MISSING;
   }
-  ReturnCode insert_call_forwarding(std::string sub_nbr, int sf_type,
-                                    int start_time, int end_time,
+  ReturnCode insert_call_forwarding(std::string sub_nbr, unsigned short sf_type,
+                                    unsigned short start_time,
+                                    unsigned short end_time,
                                     std::string numberx) override {
-    return TXBENCH_FAILURE;
+    return TXBENCH_MISSING;
   }
-  ReturnCode delete_call_forwarding(const std::string &sub_nbr, int sf_type,
-                                    int start_time) override {
-    return TXBENCH_FAILURE;
+  ReturnCode delete_call_forwarding(const std::string &sub_nbr,
+                                    unsigned short sf_type,
+                                    unsigned short start_time) override {
+    return TXBENCH_MISSING;
   }
 
 private:

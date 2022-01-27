@@ -25,9 +25,9 @@ public:
                  std::copy(record.bit.begin(), record.bit.end(),
                            std::ostream_iterator<bool>(os, ", "));
                  std::copy(record.hex.begin(), record.hex.end(),
-                           std::ostream_iterator<int>(os, ", "));
+                           std::ostream_iterator<unsigned short>(os, ", "));
                  std::copy(record.byte2.begin(), record.byte2.end(),
-                           std::ostream_iterator<int>(os, ", "));
+                           std::ostream_iterator<unsigned short>(os, ", "));
                  os << record.msc_location << ", " << record.vlr_location;
                });
   }
@@ -100,15 +100,16 @@ public:
     }
   }
 
-  ReturnCode get_subscriber_data(int s_id, std::string *sub_nbr,
+  ReturnCode get_subscriber_data(unsigned long long s_id, std::string *sub_nbr,
                                  std::array<bool, 10> &bit,
-                                 std::array<int, 10> &hex,
-                                 std::array<int, 10> &byte2, int *msc_location,
-                                 int *vlr_location) override {
+                                 std::array<unsigned short, 10> &hex,
+                                 std::array<unsigned short, 10> &byte2,
+                                 unsigned long *msc_location,
+                                 unsigned long *vlr_location) override {
     bool row;
 
     // Get subscriber data.
-    stmts_[0].bind_int(0, s_id);
+    stmts_[0].bind_int64(0, (long long)s_id);
     row = stmts_[0].step();
     if (!row) {
       return TXBENCH_FAILURE;
@@ -131,13 +132,15 @@ public:
     return TXBENCH_SUCCESS;
   }
 
-  ReturnCode get_new_destination(int s_id, int sf_type, int start_time,
-                                 int end_time,
+  ReturnCode get_new_destination(unsigned long long s_id,
+                                 unsigned short sf_type,
+                                 unsigned short start_time,
+                                 unsigned short end_time,
                                  std::vector<std::string> *numberx) override {
     ReturnCode rc = TXBENCH_SUCCESS;
 
     // Get new destination.
-    stmts_[1].bind_int(0, s_id);
+    stmts_[1].bind_int64(0, (long long)s_id);
     stmts_[1].bind_int(1, sf_type);
     stmts_[1].bind_int(2, start_time);
     stmts_[1].bind_int(3, end_time);
@@ -155,12 +158,13 @@ public:
     return rc;
   }
 
-  ReturnCode get_access_data(int s_id, int ai_type, int *data1, int *data2,
+  ReturnCode get_access_data(unsigned long long s_id, unsigned short ai_type,
+                             unsigned short *data1, unsigned short *data2,
                              std::string *data3, std::string *data4) override {
     ReturnCode rc = TXBENCH_SUCCESS;
 
     // Get access data.
-    stmts_[2].bind_int(0, s_id);
+    stmts_[2].bind_int64(0, (long long)s_id);
     stmts_[2].bind_int(1, ai_type);
     if (stmts_[2].step()) {
       *data1 = stmts_[2].column_int(0);
@@ -176,22 +180,23 @@ public:
     return rc;
   }
 
-  ReturnCode update_subscriber_data(int s_id, bool bit_1, int sf_type,
-                                    int data_a) override {
+  ReturnCode update_subscriber_data(unsigned long long s_id, bool bit_1,
+                                    unsigned short sf_type,
+                                    unsigned short data_a) override {
     ReturnCode rc = TXBENCH_SUCCESS;
 
     conn_->begin();
 
     // Update subscriber.
     stmts_[3].bind_int(0, bit_1);
-    stmts_[3].bind_int(1, s_id);
+    stmts_[3].bind_int64(1, (long long)s_id);
     stmts_[3].step();
     stmts_[3].reset();
     assert(conn_->changes() == 1);
 
     // Update special_facility.
     stmts_[4].bind_int(0, data_a);
-    stmts_[4].bind_int(1, s_id);
+    stmts_[4].bind_int64(1, (long long)s_id);
     stmts_[4].bind_int(2, sf_type);
     stmts_[4].step();
     stmts_[4].reset();
@@ -206,9 +211,9 @@ public:
   }
 
   ReturnCode update_location(const std::string &sub_nbr,
-                             int vlr_location) override {
+                             unsigned long vlr_location) override {
     // Update location.
-    stmts_[5].bind_int(0, vlr_location);
+    stmts_[5].bind_int(0, (int)vlr_location);
     stmts_[5].bind_string(1, sub_nbr);
     stmts_[5].step();
     assert(!stmts_[5].step());
@@ -218,8 +223,9 @@ public:
     return TXBENCH_SUCCESS;
   }
 
-  ReturnCode insert_call_forwarding(std::string sub_nbr, int sf_type,
-                                    int start_time, int end_time,
+  ReturnCode insert_call_forwarding(std::string sub_nbr, unsigned short sf_type,
+                                    unsigned short start_time,
+                                    unsigned short end_time,
                                     std::string numberx) override {
     bool row;
     ReturnCode rc = TXBENCH_SUCCESS;
@@ -232,12 +238,12 @@ public:
     if (!row) {
       return TXBENCH_FAILURE;
     }
-    int s_id = stmts_[6].column_int(0);
+    long long s_id = stmts_[6].column_int64(0);
     assert(!stmts_[6].step());
     stmts_[6].reset();
 
     // Select special_facility.
-    stmts_[7].bind_int(0, s_id);
+    stmts_[7].bind_int64(0, s_id);
     row = stmts_[7].step();
     if (!row) {
       return TXBENCH_FAILURE;
@@ -248,7 +254,7 @@ public:
     stmts_[7].reset();
 
     // Insert call_forwarding.
-    stmts_[8].bind_int(0, s_id);
+    stmts_[8].bind_int64(0, s_id);
     stmts_[8].bind_int(1, sf_type);
     stmts_[8].bind_int(2, start_time);
     stmts_[8].bind_int(3, end_time);
@@ -278,8 +284,9 @@ public:
     return rc;
   }
 
-  ReturnCode delete_call_forwarding(const std::string &sub_nbr, int sf_type,
-                                    int start_time) override {
+  ReturnCode delete_call_forwarding(const std::string &sub_nbr,
+                                    unsigned short sf_type,
+                                    unsigned short start_time) override {
     bool row;
     ReturnCode rc = TXBENCH_SUCCESS;
 
@@ -291,12 +298,12 @@ public:
     if (!row) {
       return TXBENCH_FAILURE;
     }
-    int s_id = stmts_[6].column_int(0);
+    long long s_id = stmts_[6].column_int64(0);
     assert(!stmts_[6].step());
     stmts_[6].reset();
 
     // Delete call_forwarding.
-    stmts_[9].bind_int(0, s_id);
+    stmts_[9].bind_int64(0, s_id);
     stmts_[9].bind_int(1, sf_type);
     stmts_[9].bind_int(2, start_time);
     stmts_[9].step();
