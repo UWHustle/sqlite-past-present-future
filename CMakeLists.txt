@@ -62,6 +62,16 @@ set_target_properties(
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tatp
 )
 
-#add_executable(tatp_duckdb benchmarks/tatp_duckdb.cpp)
-#target_include_directories(tatp_duckdb BEFORE PRIVATE ${duckdb_SOURCE_DIR})
-#target_link_libraries(tatp_duckdb txbench::tatp duckdb)
+add_executable(tatp_duckdb src/tatp/tatp_duckdb.cpp)
+target_include_directories(
+        tatp_duckdb
+        BEFORE PRIVATE
+        ${duckdb_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+target_link_libraries(tatp_duckdb txbench::tatp duckdb)
+set_target_properties(
+        tatp_duckdb
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tatp
+)
