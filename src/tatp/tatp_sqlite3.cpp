@@ -308,8 +308,8 @@ public:
     stmts_[9].bind_int(2, start_time);
     stmts_[9].step();
     assert(conn_->changes() == 0 || conn_->changes() == 1);
-    if (conn_->changes() == 1) {
-      rc = TXBENCH_SUCCESS;
+    if (conn_->changes() == 0) {
+      rc = TXBENCH_MISSING;
     }
     stmts_[9].reset();
 
