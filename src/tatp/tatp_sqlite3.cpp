@@ -1,5 +1,6 @@
 #include "readstr.hpp"
 #include "sqlite3.h"
+#include "sqlite3.hpp"
 #include "txbench/benchmarks/tatp.hpp"
 
 #include <array>
@@ -10,19 +11,11 @@
 
 class SQLite3TATPLoaderConnection : public TATPLoaderConnection {
 public:
-  explicit SQLite3TATPLoaderConnection(const std::string &filename) {
-    int rc = sqlite3_initialize();
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_open(filename.c_str(), &db_);
-    assert(rc == SQLITE_OK);
-
-    std::string init_sql = readstr("sql/init/sqlite3.sql");
-    rc = sqlite3_exec(db_, init_sql.c_str(), nullptr, nullptr, nullptr);
-    assert(rc == SQLITE_OK);
+  explicit SQLite3TATPLoaderConnection(const std::string &filename)
+      : conn_(std::make_shared<sqlite::Connection>(filename)) {
+    std::string sql = readstr("sql/init/sqlite3.sql");
+    conn_->execute(sql);
   }
-
-  ~SQLite3TATPLoaderConnection() override { sqlite3_close(db_); }
 
   void load_subscriber_batch(
       const std::vector<TATPSubscriberRecord> &batch) override {
@@ -87,43 +80,24 @@ private:
         }
       }
 
-      std::string sql_str = sql.str();
-      int rc = sqlite3_exec(db_, sql_str.c_str(), nullptr, nullptr, nullptr);
-      assert(rc == SQLITE_OK);
+      conn_->execute(sql.str());
     }
   }
 
-  sqlite3 *db_ = nullptr;
+  std::shared_ptr<sqlite::Connection> conn_;
 };
 
 class SQLite3TATPClientConnection : public TATPClientConnection {
 public:
-  explicit SQLite3TATPClientConnection(const std::string &filename) {
-    int rc;
+  explicit SQLite3TATPClientConnection(const std::string &filename)
+      : conn_(std::make_shared<sqlite::Connection>(filename)) {
 
-    rc = sqlite3_open(filename.c_str(), &db_);
-    assert(rc == SQLITE_OK);
+    stmts_.reserve(10);
 
     for (int i = 0; i <= 9; ++i) {
-      std::ostringstream stmt_path;
-      stmt_path << "sql/stmt_" << i << ".sql";
-      std::string stmt = readstr(stmt_path.str());
-      rc = sqlite3_prepare_v2(db_, stmt.c_str(), -1, &stmts_[i], nullptr);
-      assert(rc == SQLITE_OK);
+      std::string sql = readstr("sql/stmt_" + std::to_string(i) + ".sql");
+      stmts_.emplace_back(conn_, sql);
     }
-
-    rc = sqlite3_prepare_v2(db_, "BEGIN", -1, &stmts_[10], nullptr);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_prepare_v2(db_, "COMMIT", -1, &stmts_[11], nullptr);
-    assert(rc == SQLITE_OK);
-  }
-
-  ~SQLite3TATPClientConnection() override {
-    for (sqlite3_stmt *stmt : stmts_) {
-      sqlite3_finalize(stmt);
-    }
-    sqlite3_close(db_);
   }
 
   ReturnCode get_subscriber_data(int s_id, std::string *sub_nbr,
@@ -131,39 +105,28 @@ public:
                                  std::array<int, 10> &hex,
                                  std::array<int, 10> &byte2, int *msc_location,
                                  int *vlr_location) override {
-    int rc;
-
-    // Bind value to statement.
-    rc = sqlite3_bind_int(stmts_[0], 1, s_id);
-    assert(rc == SQLITE_OK);
+    bool row;
 
     // Get subscriber data.
-    rc = sqlite3_step(stmts_[0]);
-    assert(rc == SQLITE_ROW);
-
-    *sub_nbr = std::string((char *)sqlite3_column_text(stmts_[0], 1));
-
+    stmts_[0].bind_int(0, s_id);
+    row = stmts_[0].step();
+    if (!row) {
+      return TXBENCH_FAILURE;
+    }
+    *sub_nbr = stmts_[0].column_string(1);
     for (int i = 0; i < bit.size(); ++i) {
-      bit[i] = sqlite3_column_int(stmts_[0], i + 2);
+      bit[i] = stmts_[0].column_int(i + 2);
     }
-
     for (int i = 0; i < hex.size(); ++i) {
-      hex[i] = sqlite3_column_int(stmts_[0], i + 12);
+      hex[i] = stmts_[0].column_int(i + 12);
     }
-
     for (int i = 0; i < hex.size(); ++i) {
-      byte2[i] = sqlite3_column_int(stmts_[0], i + 22);
+      byte2[i] = stmts_[0].column_int(i + 22);
     }
-
-    *msc_location = sqlite3_column_int(stmts_[0], 32);
-    *vlr_location = sqlite3_column_int(stmts_[0], 33);
-
-    rc = sqlite3_step(stmts_[0]);
-    assert(rc == SQLITE_DONE);
-
-    // Reset statement.
-    rc = sqlite3_reset(stmts_[0]);
-    assert(rc == SQLITE_OK);
+    *msc_location = stmts_[0].column_int(32);
+    *vlr_location = stmts_[0].column_int(33);
+    assert(!stmts_[0].step());
+    stmts_[0].reset();
 
     return TXBENCH_SUCCESS;
   }
@@ -171,139 +134,86 @@ public:
   ReturnCode get_new_destination(int s_id, int sf_type, int start_time,
                                  int end_time,
                                  std::vector<std::string> *numberx) override {
-    ReturnCode tx_rc = TXBENCH_MISSING;
-    int rc;
-
-    // Bind values to statement.
-    rc = sqlite3_bind_int(stmts_[1], 1, s_id);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_bind_int(stmts_[1], 2, sf_type);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_bind_int(stmts_[1], 3, start_time);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_bind_int(stmts_[1], 4, end_time);
-    assert(rc == SQLITE_OK);
+    ReturnCode rc = TXBENCH_SUCCESS;
 
     // Get new destination.
-    rc = sqlite3_step(stmts_[1]);
-    if (rc == SQLITE_ROW) {
-      tx_rc = TXBENCH_SUCCESS;
+    stmts_[1].bind_int(0, s_id);
+    stmts_[1].bind_int(1, sf_type);
+    stmts_[1].bind_int(2, start_time);
+    stmts_[1].bind_int(3, end_time);
+    if (stmts_[1].step()) {
       std::vector<std::string> result;
       do {
-        result.emplace_back((char *)sqlite3_column_text(stmts_[1], 0));
-      } while ((rc = sqlite3_step(stmts_[1])) == SQLITE_ROW);
+        result.emplace_back(stmts_[1].column_string(0));
+      } while (stmts_[1].step());
       *numberx = result;
+    } else {
+      rc = TXBENCH_MISSING;
     }
+    stmts_[1].reset();
 
-    assert(rc == SQLITE_DONE);
-
-    // Reset statement.
-    rc = sqlite3_reset(stmts_[1]);
-    assert(rc == SQLITE_OK);
-
-    return tx_rc;
+    return rc;
   }
 
   ReturnCode get_access_data(int s_id, int ai_type, int *data1, int *data2,
                              std::string *data3, std::string *data4) override {
-    ReturnCode tx_rc = TXBENCH_MISSING;
-    int rc;
-
-    // Bind values to statement.
-    rc = sqlite3_bind_int(stmts_[2], 1, s_id);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_bind_int(stmts_[2], 2, ai_type);
-    assert(rc == SQLITE_OK);
+    ReturnCode rc = TXBENCH_SUCCESS;
 
     // Get access data.
-    rc = sqlite3_step(stmts_[2]);
-    if (rc == SQLITE_ROW) {
-      tx_rc = TXBENCH_SUCCESS;
-
-      *data1 = sqlite3_column_int(stmts_[2], 0);
-      *data2 = sqlite3_column_int(stmts_[2], 1);
-      *data3 = std::string((char *)sqlite3_column_text(stmts_[2], 3));
-      *data4 = std::string((char *)sqlite3_column_text(stmts_[2], 3));
-
-      rc = sqlite3_step(stmts_[2]);
+    stmts_[2].bind_int(0, s_id);
+    stmts_[2].bind_int(1, ai_type);
+    if (stmts_[2].step()) {
+      *data1 = stmts_[2].column_int(0);
+      *data2 = stmts_[2].column_int(1);
+      *data3 = stmts_[2].column_string(2);
+      *data4 = stmts_[2].column_string(3);
+      assert(!stmts_[2].step());
+    } else {
+      rc = TXBENCH_MISSING;
     }
+    stmts_[2].reset();
 
-    assert(rc == SQLITE_DONE);
-
-    // Reset statement.
-    rc = sqlite3_reset(stmts_[2]);
-    assert(rc == SQLITE_OK);
-
-    return tx_rc;
+    return rc;
   }
 
   ReturnCode update_subscriber_data(int s_id, bool bit_1, int sf_type,
                                     int data_a) override {
-    int rc;
+    ReturnCode rc = TXBENCH_SUCCESS;
 
-    // Bind values to update subscriber statement.
-    rc = sqlite3_bind_int(stmts_[3], 1, bit_1);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_bind_int(stmts_[3], 2, s_id);
-    assert(rc == SQLITE_OK);
-
-    // Bind values to update special_facility statement.
-    rc = sqlite3_bind_int(stmts_[4], 1, data_a);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_bind_int(stmts_[4], 2, s_id);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_bind_int(stmts_[4], 3, sf_type);
-    assert(rc == SQLITE_OK);
-
-    // Begin.
-    rc = sqlite3_step(stmts_[10]);
-    assert(rc == SQLITE_DONE);
+    conn_->begin();
 
     // Update subscriber.
-    rc = sqlite3_step(stmts_[3]);
-    assert(rc == SQLITE_DONE);
-    assert(sqlite3_changes(db_) == 1);
+    stmts_[3].bind_int(0, bit_1);
+    stmts_[3].bind_int(1, s_id);
+    stmts_[3].step();
+    stmts_[3].reset();
+    assert(conn_->changes() == 1);
 
     // Update special_facility.
-    rc = sqlite3_step(stmts_[4]);
-    assert(rc == SQLITE_DONE);
-    assert(sqlite3_changes(db_) == 0 || sqlite3_changes(db_) == 1);
+    stmts_[4].bind_int(0, data_a);
+    stmts_[4].bind_int(1, s_id);
+    stmts_[4].bind_int(2, sf_type);
+    stmts_[4].step();
+    stmts_[4].reset();
+    assert(conn_->changes() == 0 || conn_->changes() == 1);
+    if (conn_->changes() == 0) {
+      rc = TXBENCH_MISSING;
+    }
 
-    // Commit.
-    rc = sqlite3_step(stmts_[11]);
-    assert(rc == SQLITE_DONE);
+    conn_->commit();
 
-    // Reset statements.
-    rc = sqlite3_reset(stmts_[10]);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_reset(stmts_[3]);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_reset(stmts_[4]);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_reset(stmts_[11]);
-    assert(rc == SQLITE_OK);
-
-    return sqlite3_changes(db_) == 0 ? TXBENCH_MISSING : TXBENCH_SUCCESS;
+    return rc;
   }
 
   ReturnCode update_location(const std::string &sub_nbr,
                              int vlr_location) override {
-    int rc;
-
-    // Bind value to statement.
-    rc = sqlite3_bind_int(stmts_[5], 1, vlr_location);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_bind_text(stmts_[5], 2, sub_nbr.c_str(), -1, nullptr);
-    assert(rc == SQLITE_OK);
-
     // Update location.
-    rc = sqlite3_step(stmts_[5]);
-    assert(rc == SQLITE_DONE);
-    assert(sqlite3_changes(db_) == 1);
-
-    // Reset statement.
-    rc = sqlite3_reset(stmts_[5]);
-    assert(rc == SQLITE_OK);
+    stmts_[5].bind_int(0, vlr_location);
+    stmts_[5].bind_string(1, sub_nbr);
+    stmts_[5].step();
+    assert(!stmts_[5].step());
+    stmts_[5].reset();
+    assert(conn_->changes() == 1);
 
     return TXBENCH_SUCCESS;
   }
@@ -311,136 +221,99 @@ public:
   ReturnCode insert_call_forwarding(std::string sub_nbr, int sf_type,
                                     int start_time, int end_time,
                                     std::string numberx) override {
-    ReturnCode tx_rc = TXBENCH_SUCCESS;
-    int rc;
+    bool row;
+    ReturnCode rc = TXBENCH_SUCCESS;
 
-    // Bind value to select subscriber statement.
-    rc = sqlite3_bind_text(stmts_[6], 1, sub_nbr.c_str(), -1, nullptr);
-    assert(rc == SQLITE_OK);
-
-    // Bind values to select insert call_forwarding statement.
-    rc = sqlite3_bind_int(stmts_[8], 2, sf_type);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_bind_int(stmts_[8], 3, start_time);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_bind_int(stmts_[8], 4, end_time);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_bind_text(stmts_[8], 5, numberx.c_str(), -1, nullptr);
-    assert(rc == SQLITE_OK);
-
-    // Begin.
-    rc = sqlite3_step(stmts_[10]);
-    assert(rc == SQLITE_DONE);
+    conn_->begin();
 
     // Select subscriber.
-    rc = sqlite3_step(stmts_[6]);
-    assert(rc == SQLITE_ROW);
-    int s_id = sqlite3_column_int(stmts_[6], 0);
-    rc = sqlite3_step(stmts_[6]);
-    assert(rc == SQLITE_DONE);
-
-    // Bind value to select special_facility statement.
-    rc = sqlite3_bind_int(stmts_[7], 1, s_id);
-    assert(rc == SQLITE_OK);
+    stmts_[6].bind_string(0, sub_nbr);
+    row = stmts_[6].step();
+    if (!row) {
+      return TXBENCH_FAILURE;
+    }
+    int s_id = stmts_[6].column_int(0);
+    assert(!stmts_[6].step());
+    stmts_[6].reset();
 
     // Select special_facility.
-    rc = sqlite3_step(stmts_[7]);
-    assert(rc == SQLITE_ROW);
-    while (rc == SQLITE_ROW) {
-      rc = sqlite3_step(stmts_[7]);
+    stmts_[7].bind_int(0, s_id);
+    row = stmts_[7].step();
+    if (!row) {
+      return TXBENCH_FAILURE;
     }
-    assert(rc == SQLITE_DONE);
-
-    // Bind value to insert call_forwarding statement.
-    rc = sqlite3_bind_int(stmts_[8], 1, s_id);
-    assert(rc == SQLITE_OK);
+    do {
+      row = stmts_[7].step();
+    } while (row);
+    stmts_[7].reset();
 
     // Insert call_forwarding.
-    rc = sqlite3_step(stmts_[8]);
-    assert(rc == SQLITE_DONE && sqlite3_changes(db_) == 1 ||
-           rc == SQLITE_CONSTRAINT && sqlite3_changes(db_) == 0);
-
-    // Commit.
-    rc = sqlite3_step(stmts_[11]);
-    assert(rc == SQLITE_DONE);
-
-    // Reset statements.
-    rc = sqlite3_reset(stmts_[10]);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_reset(stmts_[6]);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_reset(stmts_[7]);
-    assert(rc == SQLITE_OK);
-
-    rc = sqlite3_reset(stmts_[8]);
-    assert(rc == SQLITE_OK || rc == SQLITE_CONSTRAINT);
-    if (rc == SQLITE_CONSTRAINT) {
-      // Primary key conflict (acceptable error).
-      tx_rc = TXBENCH_CONSTRAINT;
+    stmts_[8].bind_int(0, s_id);
+    stmts_[8].bind_int(1, sf_type);
+    stmts_[8].bind_int(2, start_time);
+    stmts_[8].bind_int(3, end_time);
+    stmts_[8].bind_string(4, numberx);
+    try {
+      stmts_[8].step();
+      assert(conn_->changes() == 1);
+    } catch (const sqlite::Exception &e) {
+      // Primary key conflict is an acceptable error.
+      if (e.code() != SQLITE_CONSTRAINT) {
+        throw sqlite::Exception(e);
+      }
+      assert(conn_->changes() == 0);
+      rc = TXBENCH_CONSTRAINT;
     }
 
-    rc = sqlite3_reset(stmts_[11]);
-    assert(rc == SQLITE_OK);
+    try {
+      stmts_[8].reset();
+    } catch (const sqlite::Exception &e) {
+      if (e.code() != SQLITE_CONSTRAINT) {
+        throw sqlite::Exception(e);
+      }
+    }
 
-    return tx_rc;
+    conn_->commit();
+
+    return rc;
   }
 
   ReturnCode delete_call_forwarding(const std::string &sub_nbr, int sf_type,
                                     int start_time) override {
-    ReturnCode tx_rc = TXBENCH_MISSING;
-    int rc;
+    bool row;
+    ReturnCode rc = TXBENCH_SUCCESS;
 
-    // Bind value to select subscriber statement.
-    rc = sqlite3_bind_text(stmts_[6], 1, sub_nbr.c_str(), -1, nullptr);
-    assert(rc == SQLITE_OK);
-
-    // Begin.
-    rc = sqlite3_step(stmts_[10]);
-    assert(rc == SQLITE_DONE);
+    conn_->begin();
 
     // Select subscriber.
-    rc = sqlite3_step(stmts_[6]);
-    assert(rc == SQLITE_ROW);
-    int s_id = sqlite3_column_int(stmts_[6], 0);
-    rc = sqlite3_step(stmts_[6]);
-    assert(rc == SQLITE_DONE);
-
-    // Bind values to delete call_forwarding statement.
-    rc = sqlite3_bind_int(stmts_[9], 1, s_id);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_bind_int(stmts_[9], 2, sf_type);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_bind_int(stmts_[9], 3, start_time);
-    assert(rc == SQLITE_OK);
+    stmts_[6].bind_string(0, sub_nbr);
+    row = stmts_[6].step();
+    if (!row) {
+      return TXBENCH_FAILURE;
+    }
+    int s_id = stmts_[6].column_int(0);
+    assert(!stmts_[6].step());
+    stmts_[6].reset();
 
     // Delete call_forwarding.
-    rc = sqlite3_step(stmts_[9]);
-    assert(rc == SQLITE_DONE);
-    assert(sqlite3_changes(db_) == 0 || sqlite3_changes(db_) == 1);
-    if (sqlite3_changes(db_) == 1) {
-      tx_rc = TXBENCH_SUCCESS;
+    stmts_[9].bind_int(0, s_id);
+    stmts_[9].bind_int(1, sf_type);
+    stmts_[9].bind_int(2, start_time);
+    stmts_[9].step();
+    assert(conn_->changes() == 0 || conn_->changes() == 1);
+    if (conn_->changes() == 1) {
+      rc = TXBENCH_SUCCESS;
     }
+    stmts_[9].reset();
 
-    // Commit.
-    rc = sqlite3_step(stmts_[11]);
-    assert(rc == SQLITE_DONE);
+    conn_->commit();
 
-    // Reset statements.
-    rc = sqlite3_reset(stmts_[10]);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_reset(stmts_[6]);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_reset(stmts_[9]);
-    assert(rc == SQLITE_OK);
-    rc = sqlite3_reset(stmts_[11]);
-    assert(rc == SQLITE_OK);
-
-    return tx_rc;
+    return rc;
   }
 
 private:
-  sqlite3 *db_ = nullptr;
-  std::array<sqlite3_stmt *, 12> stmts_{};
+  std::shared_ptr<sqlite::Connection> conn_;
+  std::vector<sqlite::Statement> stmts_;
 };
 
 class SQLite3TATPServer : public TATPServer {
