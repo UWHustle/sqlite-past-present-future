@@ -41,7 +41,7 @@ target_compile_options(
         -DSQLITE_OMIT_SHARED_CACHE
         -DSQLITE_USE_ALLOCA
         -DSQLITE_OMIT_AUTOINIT
-        -DSQLITE_DEFAULT_CACHE_SIZE=-1048576
+        -DSQLITE_DEFAULT_CACHE_SIZE=-8388608
 )
 
 add_library(duckdb ${duckdb_SOURCE_DIR}/duckdb.cpp)

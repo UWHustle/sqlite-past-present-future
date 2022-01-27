@@ -1,3 +1,5 @@
+PRAGMA memory_limit = '8GB';
+
 DROP TABLE IF EXISTS call_forwarding;
 DROP TABLE IF EXISTS special_facility;
 DROP TABLE IF EXISTS access_info;
