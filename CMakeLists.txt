@@ -25,19 +25,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(txbench)
 
 FetchContent_Declare(
-        sqlite3
-        URL https://www.sqlite.org/2022/sqlite-amalgamation-3370200.zip
-        URL_HASH SHA3_256=7f535314ac30f1c7847df2a66a9e16a322f55dae6e83b264178cf02114cd0617
-)
-FetchContent_MakeAvailable(sqlite3)
-
-FetchContent_Declare(
         duckdb
         URL https://github.com/duckdb/duckdb/releases/download/v0.3.1/libduckdb-src.zip
 )
 FetchContent_MakeAvailable(duckdb)
 
-add_library(sqlite3 ${sqlite3_SOURCE_DIR}/sqlite3.c)
+add_library(sqlite3 src/sqlite/sqlite3.c)
 target_compile_options(
         sqlite3
         PRIVATE
@@ -57,8 +50,6 @@ target_compile_options(
 )
 
 add_library(duckdb ${duckdb_SOURCE_DIR}/duckdb.cpp)
-
-file(COPY src/tatp/sql DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/tatp)
 
 macro(add_benchmark NAME)
     add_executable(${NAME}_sqlite3 src/${NAME}/${NAME}_sqlite3.cpp)
@@ -91,11 +82,12 @@ macro(add_benchmark NAME)
 endmacro()
 
 add_benchmark(tatp)
-
-target_link_libraries(tatp_duckdb txbench::tatp)
 target_link_libraries(tatp_sqlite3 txbench::tatp)
+target_link_libraries(tatp_duckdb txbench::tatp)
+file(COPY src/tatp/sql DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/tatp)
 
 add_benchmark(ssb)
-
 add_subdirectory(src/ssb/dbgen)
-
+target_link_libraries(ssb_sqlite3 cxxopts)
+target_link_libraries(ssb_duckdb cxxopts)
+file(COPY src/ssb/sql DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ssb)

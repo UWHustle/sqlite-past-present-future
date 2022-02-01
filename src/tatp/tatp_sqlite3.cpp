@@ -1,5 +1,4 @@
 #include "readstr.hpp"
-#include "sqlite3.h"
 #include "sqlite3.hpp"
 #include "txbench/benchmarks/tatp.hpp"
 
