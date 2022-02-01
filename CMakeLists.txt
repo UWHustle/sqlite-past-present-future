@@ -91,3 +91,8 @@ add_subdirectory(src/ssb/dbgen)
 target_link_libraries(ssb_sqlite3 cxxopts)
 target_link_libraries(ssb_duckdb cxxopts)
 file(COPY src/ssb/sql DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ssb)
+
+add_benchmark(blob)
+target_link_libraries(blob_sqlite3 cxxopts)
+target_link_libraries(blob_duckdb cxxopts)
+

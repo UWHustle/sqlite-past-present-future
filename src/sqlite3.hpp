@@ -122,6 +122,11 @@ public:
 
   void bind_string(int i, const std::string &arg) { bind_text(i, arg.c_str()); }
 
+  void bind_blob(int i, void *arg, int n) {
+    int rc = sqlite3_bind_blob(stmt_, i, arg, n, nullptr);
+    assert_sqlite_ok(rc);
+  }
+
   bool step() {
     int rc = sqlite3_step(stmt_);
     switch (rc) {
