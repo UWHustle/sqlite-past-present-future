@@ -18,19 +18,19 @@ set(CXXOPTS_ENABLE_WARNINGS OFF)
 FetchContent_MakeAvailable(cxxopts)
 
 FetchContent_Declare(
-        txbench
-        GIT_REPOSITORY https://github.com/UWHustle/txbench.git
-        GIT_TAG tatp-refinements
+        dbbench
+        GIT_REPOSITORY https://github.com/kpgaffney/dbbench.git
+        GIT_TAG main
 )
-FetchContent_MakeAvailable(txbench)
+set(DBBENCH_BUILD_EXAMPLES OFF)
+FetchContent_MakeAvailable(dbbench)
 
-FetchContent_Declare(
-        duckdb
-        URL https://github.com/duckdb/duckdb/releases/download/v0.3.1/libduckdb-src.zip
+add_library(
+        sqlite3
+        src/systems/sqlite/sqlite3.c
+        src/systems/sqlite/sqlite3.h
+        src/systems/sqlite/sqlite3.hpp
 )
-FetchContent_MakeAvailable(duckdb)
-
-add_library(sqlite3 src/sqlite/sqlite3.c)
 target_compile_options(
         sqlite3
         PRIVATE
@@ -46,53 +46,87 @@ target_compile_options(
         -DSQLITE_OMIT_SHARED_CACHE
         -DSQLITE_USE_ALLOCA
         -DSQLITE_OMIT_AUTOINIT
-        -DSQLITE_DEFAULT_CACHE_SIZE=-8000000
 )
 
-add_library(duckdb ${duckdb_SOURCE_DIR}/duckdb.cpp)
+add_executable(
+        sqlite3_shell
+        src/systems/sqlite/shell.c
+        src/systems/sqlite/sqlite3.c
+        src/systems/sqlite/sqlite3.h
+)
 
-macro(add_benchmark NAME)
-    add_executable(${NAME}_sqlite3 src/${NAME}/${NAME}_sqlite3.cpp)
-    target_include_directories(
-            ${NAME}_sqlite3
-            BEFORE PRIVATE
-            ${sqlite3_SOURCE_DIR}
-            ${CMAKE_CURRENT_SOURCE_DIR}/src
-    )
-    target_link_libraries(${NAME}_sqlite3 sqlite3)
-    set_target_properties(
-            ${NAME}_sqlite3
-            PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${NAME}
-    )
+add_library(
+        duckdb
+        src/systems/duckdb/duckdb.cpp
+        src/systems/duckdb/duckdb.hpp
+)
 
-    add_executable(${NAME}_duckdb src/${NAME}/${NAME}_duckdb.cpp)
-    target_include_directories(
-            ${NAME}_duckdb
-            BEFORE PRIVATE
-            ${duckdb_SOURCE_DIR}
-            ${CMAKE_CURRENT_SOURCE_DIR}/src
-    )
-    target_link_libraries(${NAME}_duckdb duckdb)
-    set_target_properties(
-            ${NAME}_duckdb
-            PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${NAME}
-    )
-endmacro()
+# SSB executables.
 
-add_benchmark(tatp)
-target_link_libraries(tatp_sqlite3 txbench::tatp)
-target_link_libraries(tatp_duckdb txbench::tatp)
-file(COPY src/tatp/sql DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/tatp)
+add_subdirectory(src/benchmarks/ssb/dbgen)
 
-add_benchmark(ssb)
-add_subdirectory(src/ssb/dbgen)
-target_link_libraries(ssb_sqlite3 cxxopts)
-target_link_libraries(ssb_duckdb cxxopts)
-file(COPY src/ssb/sql DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ssb)
+add_executable(ssb_sqlite3 src/benchmarks/ssb/ssb_sqlite3.cpp)
+target_include_directories(ssb_sqlite3 PRIVATE src)
+target_link_libraries(ssb_sqlite3 cxxopts sqlite3)
+set_target_properties(
+        ssb_sqlite3
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ssb
+)
 
-add_benchmark(blob)
-target_link_libraries(blob_sqlite3 cxxopts)
-target_link_libraries(blob_duckdb cxxopts)
+add_executable(ssb_duckdb src/benchmarks/ssb/ssb_duckdb.cpp)
+target_include_directories(ssb_duckdb PRIVATE src)
+target_link_libraries(ssb_duckdb cxxopts duckdb)
+set_target_properties(
+        ssb_duckdb
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ssb
+)
 
+file(COPY src/benchmarks/ssb/sql DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ssb)
+
+# TATP executables.
+
+add_executable(tatp_sqlite3 src/benchmarks/tatp/tatp_sqlite3.cpp)
+target_include_directories(tatp_sqlite3 PRIVATE src)
+target_link_libraries(tatp_sqlite3 cxxopts dbbench_tatp sqlite3)
+set_target_properties(
+        tatp_sqlite3
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tatp
+)
+
+add_executable(tatp_duckdb src/benchmarks/tatp/tatp_duckdb.cpp)
+target_include_directories(tatp_duckdb PRIVATE src)
+target_link_libraries(tatp_duckdb cxxopts dbbench_tatp duckdb)
+set_target_properties(
+        tatp_duckdb
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tatp
+)
+
+# Blob executables.
+
+add_executable(blob_sqlite3 src/benchmarks/blob/blob_sqlite3.cpp)
+target_include_directories(blob_sqlite3 PRIVATE src)
+target_link_libraries(blob_sqlite3 cxxopts dbbench_core sqlite3)
+set_target_properties(
+        blob_sqlite3
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/blob
+)
+
+add_executable(blob_duckdb src/benchmarks/blob/blob_duckdb.cpp)
+target_include_directories(blob_duckdb PRIVATE src)
+target_link_libraries(blob_duckdb cxxopts dbbench_core duckdb)
+set_target_properties(
+        blob_duckdb
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/blob
+)
+
+# Scripts.
+configure_file(scripts/benchmarks/ssb.sh ${CMAKE_CURRENT_BINARY_DIR}/ssb COPYONLY)
+configure_file(scripts/benchmarks/tatp.sh ${CMAKE_CURRENT_BINARY_DIR}/tatp COPYONLY)
+configure_file(scripts/benchmarks/blob.sh ${CMAKE_CURRENT_BINARY_DIR}/blob COPYONLY)
+configure_file(scripts/all.sh ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
