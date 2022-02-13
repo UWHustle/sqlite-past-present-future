@@ -6,6 +6,8 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 include(FetchContent)
 
+find_package(Threads REQUIRED)
+
 FetchContent_Declare(
         cxxopts
         GIT_REPOSITORY https://github.com/jarro2783/cxxopts.git
@@ -47,6 +49,7 @@ target_compile_options(
         -DSQLITE_USE_ALLOCA
         -DSQLITE_OMIT_AUTOINIT
 )
+target_link_libraries(sqlite3 Threads::Threads ${CMAKE_DL_LIBS})
 
 add_executable(
         sqlite3_shell
@@ -54,12 +57,14 @@ add_executable(
         src/systems/sqlite/sqlite3.c
         src/systems/sqlite/sqlite3.h
 )
+target_link_libraries(sqlite3_shell Threads::Threads ${CMAKE_DL_LIBS})
 
 add_library(
         duckdb
         src/systems/duckdb/duckdb.cpp
         src/systems/duckdb/duckdb.hpp
 )
+target_link_libraries(duckdb Threads::Threads ${CMAKE_DL_LIBS})
 
 # SSB executables.
 
@@ -89,7 +94,7 @@ file(COPY src/benchmarks/ssb/sql DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ssb)
 
 add_executable(tatp_sqlite3 src/benchmarks/tatp/tatp_sqlite3.cpp)
 target_include_directories(tatp_sqlite3 PRIVATE src)
-target_link_libraries(tatp_sqlite3 cxxopts dbbench_tatp sqlite3 ${CMAKE_DL_LIBS})
+target_link_libraries(tatp_sqlite3 cxxopts dbbench_tatp sqlite3)
 set_target_properties(
         tatp_sqlite3
         PROPERTIES
@@ -98,7 +103,7 @@ set_target_properties(
 
 add_executable(tatp_duckdb src/benchmarks/tatp/tatp_duckdb.cpp)
 target_include_directories(tatp_duckdb PRIVATE src)
-target_link_libraries(tatp_duckdb cxxopts dbbench_tatp duckdb ${CMAKE_DL_LIBS})
+target_link_libraries(tatp_duckdb cxxopts dbbench_tatp duckdb)
 set_target_properties(
         tatp_duckdb
         PROPERTIES
@@ -109,7 +114,7 @@ set_target_properties(
 
 add_executable(blob_sqlite3 src/benchmarks/blob/blob_sqlite3.cpp)
 target_include_directories(blob_sqlite3 PRIVATE src)
-target_link_libraries(blob_sqlite3 cxxopts dbbench_core sqlite3 ${CMAKE_DL_LIBS})
+target_link_libraries(blob_sqlite3 cxxopts dbbench_core sqlite3)
 set_target_properties(
         blob_sqlite3
         PROPERTIES
@@ -118,7 +123,7 @@ set_target_properties(
 
 add_executable(blob_duckdb src/benchmarks/blob/blob_duckdb.cpp)
 target_include_directories(blob_duckdb PRIVATE src)
-target_link_libraries(blob_duckdb cxxopts dbbench_core duckdb ${CMAKE_DL_LIBS})
+target_link_libraries(blob_duckdb cxxopts dbbench_core duckdb)
 set_target_properties(
         blob_duckdb
         PROPERTIES

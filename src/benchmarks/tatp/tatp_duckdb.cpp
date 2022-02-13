@@ -1,8 +1,8 @@
 #include "cxxopts.hpp"
 #include "dbbench/benchmarks/tatp.hpp"
 #include "dbbench/runner.hpp"
-#include "systems/duckdb/duckdb.hpp"
 #include "helpers.hpp"
+#include "systems/duckdb/duckdb.hpp"
 
 template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
@@ -76,6 +76,8 @@ public:
       stmts_.push_back(conn_.Prepare(sql));
     }
   }
+
+  Worker(Worker &&) = default;
 
   bool operator()() {
     return std::visit(
@@ -204,7 +206,7 @@ int main(int argc, char **argv) {
       duckdb::Connection conn(db);
       assert_success(conn.Query("PRAGMA memory_limit='" + memory_limit + "'"));
       assert_success(conn.Query("PRAGMA threads=" + threads));
-      workers.emplace_back(std::move(conn), n_subscriber_records);
+      workers.emplace_back(conn, n_subscriber_records);
     }
 
     double throughput = dbbench::run(workers, result["warmup"].as<size_t>(),

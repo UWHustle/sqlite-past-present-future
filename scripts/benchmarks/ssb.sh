@@ -4,7 +4,7 @@ for sf in 1 2 5; do
   printf "*** SSB (scale factor %s) ***\n" "$sf"
 
   printf "Generating data...\n"
-  rm ./*.tbl
+  rm -f ./*.tbl
   ./dbgen -s "$sf"
 
   printf "Loading data into SQLite3...\n"

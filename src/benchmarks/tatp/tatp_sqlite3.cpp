@@ -33,7 +33,7 @@ void load(sqlite::Database &db, uint64_t n_subscriber_records) {
   while (auto record = record_generator.next()) {
     std::visit(overloaded{
                    [&](const dbbench::tatp::SubscriberRecord &r) {
-                     insert_subscriber.bind(1, (int64_t)r.s_id);
+                     insert_subscriber.bind(1, (sqlite3_int64)r.s_id);
                      insert_subscriber.bind(2, r.sub_nbr);
                      for (int i = 0; i < 10; ++i) {
                        insert_subscriber.bind(i + 3, (int)r.bit[i]);
@@ -44,15 +44,15 @@ void load(sqlite::Database &db, uint64_t n_subscriber_records) {
                      for (int i = 0; i < 10; ++i) {
                        insert_subscriber.bind(i + 23, (int)r.byte2[i]);
                      }
-                     insert_subscriber.bind(33, (int64_t)r.msc_location);
-                     insert_subscriber.bind(34, (int64_t)r.vlr_location);
+                     insert_subscriber.bind(33, (sqlite3_int64)r.msc_location);
+                     insert_subscriber.bind(34, (sqlite3_int64)r.vlr_location);
 
                      insert_subscriber.step();
                      insert_subscriber.reset();
                    },
 
                    [&](const dbbench::tatp::AccessInfoRecord &r) {
-                     insert_access_info.bind(1, (int64_t)r.s_id);
+                     insert_access_info.bind(1, (sqlite3_int64)r.s_id);
                      insert_access_info.bind(2, (int)r.ai_type);
                      insert_access_info.bind(3, (int)r.data1);
                      insert_access_info.bind(4, (int)r.data2);
@@ -64,7 +64,7 @@ void load(sqlite::Database &db, uint64_t n_subscriber_records) {
                    },
 
                    [&](const dbbench::tatp::SpecialFacilityRecord &r) {
-                     insert_special_facility.bind(1, (int64_t)r.s_id);
+                     insert_special_facility.bind(1, (sqlite3_int64)r.s_id);
                      insert_special_facility.bind(2, (int)r.sf_type);
                      insert_special_facility.bind(3, (int)r.is_active);
                      insert_special_facility.bind(4, (int)r.error_cntrl);
@@ -76,7 +76,7 @@ void load(sqlite::Database &db, uint64_t n_subscriber_records) {
                    },
 
                    [&](const dbbench::tatp::CallForwardingRecord &r) {
-                     insert_call_forwarding.bind(1, (int64_t)r.s_id);
+                     insert_call_forwarding.bind(1, (sqlite3_int64)r.s_id);
                      insert_call_forwarding.bind(2, (int)r.sf_type);
                      insert_call_forwarding.bind(3, (int)r.start_time);
                      insert_call_forwarding.bind(4, (int)r.end_time);
@@ -104,14 +104,14 @@ public:
   bool operator()() {
     return std::visit(overloaded{
                           [&](const dbbench::tatp::GetSubscriberData &p) {
-                            stmts_[0].bind(1, (int64_t)p.s_id);
+                            stmts_[0].bind(1, (sqlite3_int64)p.s_id);
                             stmts_[0].step().value();
                             stmts_[0].reset();
                             return true;
                           },
 
                           [&](const dbbench::tatp::GetNewDestination &p) {
-                            stmts_[1].bind(1, (int64_t)p.s_id);
+                            stmts_[1].bind(1, (sqlite3_int64)p.s_id);
                             stmts_[1].bind(2, (int)p.sf_type);
                             stmts_[1].bind(3, (int)p.start_time);
                             stmts_[1].bind(4, (int)p.end_time);
@@ -124,7 +124,7 @@ public:
                           },
 
                           [&](const dbbench::tatp::GetAccessData &p) {
-                            stmts_[2].bind(1, (int64_t)p.s_id);
+                            stmts_[2].bind(1, (sqlite3_int64)p.s_id);
                             stmts_[2].bind(2, (int)p.ai_type);
                             size_t count = 0;
                             while (stmts_[2].step().has_value()) {
@@ -138,12 +138,12 @@ public:
                             conn_.begin();
 
                             stmts_[3].bind(1, (int)p.bit_1);
-                            stmts_[3].bind(2, (int64_t)p.s_id);
+                            stmts_[3].bind(2, (sqlite3_int64)p.s_id);
                             stmts_[3].step();
                             stmts_[3].reset();
 
                             stmts_[4].bind(1, (int)p.data_a);
-                            stmts_[4].bind(2, (int64_t)p.s_id);
+                            stmts_[4].bind(2, (sqlite3_int64)p.s_id);
                             stmts_[4].bind(3, (int)p.sf_type);
                             stmts_[4].step();
                             stmts_[4].reset();
@@ -154,7 +154,7 @@ public:
                           },
 
                           [&](const dbbench::tatp::UpdateLocation &p) {
-                            stmts_[5].bind(1, (int64_t)p.vlr_location);
+                            stmts_[5].bind(1, (sqlite3_int64)p.vlr_location);
                             stmts_[5].bind(2, p.sub_nbr);
                             stmts_[5].step();
                             stmts_[5].reset();
@@ -168,12 +168,12 @@ public:
                             uint64_t s_id = stmts_[6].step()->column_int64(0);
                             stmts_[6].reset();
 
-                            stmts_[7].bind(1, (int64_t)s_id);
+                            stmts_[7].bind(1, (sqlite3_int64)s_id);
                             while (stmts_[7].step())
                               ;
                             stmts_[7].reset();
 
-                            stmts_[8].bind(1, (int64_t)s_id);
+                            stmts_[8].bind(1, (sqlite3_int64)s_id);
                             stmts_[8].bind(2, (int)p.sf_type);
                             stmts_[8].bind(3, (int)p.start_time);
                             stmts_[8].bind(4, (int)p.end_time);
@@ -203,7 +203,7 @@ public:
                             uint64_t s_id = stmts_[6].step()->column_int64(0);
                             stmts_[6].reset();
 
-                            stmts_[9].bind(1, (int64_t)s_id);
+                            stmts_[9].bind(1, (sqlite3_int64)s_id);
                             stmts_[9].bind(2, (int)p.sf_type);
                             stmts_[9].bind(3, (int)p.start_time);
                             stmts_[9].step();
