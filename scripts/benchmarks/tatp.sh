@@ -9,13 +9,11 @@ for sf in 10000 100000 1000000; do
   printf "Evaluating SQLite3...\n"
   for journal_mode in "DELETE" "TRUNCATE" "WAL"; do
     for cache_size in "-100000" "-200000" "-500000" "-1000000" "-2000000" "-5000000"; do
-      for clients in 1 2 4; do
-        command="./tatp_sqlite3 --run --records=$sf --journal_mode=$journal_mode --cache_size=$cache_size --clients=$clients"
-        printf "%s\n" "$command"
-        for trial in {1..3}; do
-          printf "%s," "$trial"
-          eval "$command"
-        done
+      command="./tatp_sqlite3 --run --records=$sf --journal_mode=$journal_mode --cache_size=$cache_size"
+      printf "%s\n" "$command"
+      for trial in {1..3}; do
+        printf "%s," "$trial"
+        eval "$command"
       done
     done
   done
@@ -27,13 +25,11 @@ for sf in 10000 100000 1000000; do
 
   printf "Evaluating DuckDB...\n"
   for memory_limit in "100MB" "200MB" "500MB" "1GB" "2GB" "5GB"; do
-    for clients in 1 2 4; do
-      command="./tatp_duckdb --run --records=$sf --memory_limit=$memory_limit --clients=$clients"
-      printf "%s\n" "$command"
-      for trial in {1..3}; do
-        printf "%s," "$trial"
-        eval "$command"
-      done
+    command="./tatp_duckdb --run --records=$sf --memory_limit=$memory_limit"
+    printf "%s\n" "$command"
+    for trial in {1..3}; do
+      printf "%s," "$trial"
+      eval "$command"
     done
   done
 
