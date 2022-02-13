@@ -2,7 +2,7 @@
 
 ## How to run the benchmarks
 
-First, build the executables:d
+First, build the executables:
 ```
 mkdir build
 cd build
