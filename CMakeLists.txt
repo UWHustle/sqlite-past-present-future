@@ -27,11 +27,18 @@ FetchContent_Declare(
 set(DBBENCH_BUILD_EXAMPLES OFF)
 FetchContent_MakeAvailable(dbbench)
 
+FetchContent_Declare(
+        sqlite3cpp
+        GIT_REPOSITORY https://github.com/kpgaffney/sqlite3cpp.git
+        GIT_TAG main
+)
+set(SQLITE3CPP_BUILD_TESTS OFF)
+FetchContent_MakeAvailable(sqlite3cpp)
+
 add_library(
         sqlite3
         src/systems/sqlite/sqlite3.c
         src/systems/sqlite/sqlite3.h
-        src/systems/sqlite/sqlite3.hpp
 )
 target_compile_options(
         sqlite3
@@ -49,7 +56,7 @@ target_compile_options(
         -DSQLITE_USE_ALLOCA
         -DSQLITE_OMIT_AUTOINIT
 )
-target_link_libraries(sqlite3 Threads::Threads ${CMAKE_DL_LIBS})
+target_link_libraries(sqlite3 sqlite3cpp Threads::Threads ${CMAKE_DL_LIBS})
 
 add_executable(
         sqlite3_shell
