@@ -1,7 +1,7 @@
 #include "cxxopts.hpp"
 #include "helpers.hpp"
 #include "readfile.hpp"
-#include "systems/sqlite/sqlite3.hpp"
+#include "sqlite3.hpp"
 
 int main(int argc, char **argv) {
   cxxopts::Options options = ssb_options("ssb_sqlite3", "SSB on SQLite3");
@@ -21,28 +21,29 @@ int main(int argc, char **argv) {
 
   sqlite::Database db("ssb.sqlite");
 
-  sqlite::Connection conn = db.connect();
+  sqlite::Connection conn;
+  db.connect(conn).expect(SQLITE_OK);
 
   uint64_t mask = result["bloom_filter"].as<bool>() ? 0 : 0x00080000;
-  int rc = sqlite3_test_control(SQLITE_TESTCTRL_OPTIMIZATIONS,
-                                conn.context()->raw(), mask);
+  int rc = sqlite3_test_control(SQLITE_TESTCTRL_OPTIMIZATIONS, conn.ptr().get(),
+                                mask);
   if (rc != SQLITE_OK) {
-    throw std::runtime_error(sqlite3_errmsg(conn.context()->raw()));
+    throw std::runtime_error(sqlite3_errmsg(conn.ptr().get()));
   }
 
-  conn.execute("ANALYZE");
+  conn.execute("ANALYZE").expect(SQLITE_OK);
 
-  conn.execute("SELECT * FROM lineorder");
-  conn.execute("SELECT * FROM part");
-  conn.execute("SELECT * FROM supplier");
-  conn.execute("SELECT * FROM customer");
-  conn.execute("SELECT * FROM date");
+  conn.execute("SELECT * FROM lineorder").expect(SQLITE_OK);
+  conn.execute("SELECT * FROM part").expect(SQLITE_OK);
+  conn.execute("SELECT * FROM supplier").expect(SQLITE_OK);
+  conn.execute("SELECT * FROM customer").expect(SQLITE_OK);
+  conn.execute("SELECT * FROM date").expect(SQLITE_OK);
 
   for (const std::string &query :
        {"q1.1", "q1.2", "q1.3", "q2.1", "q2.2", "q2.3", "q3.1", "q3.2", "q3.3",
         "q3.4", "q4.1", "q4.2", "q4.3"}) {
     std::string sql = readfile("sql/" + query + ".sql");
-    std::cout << time([&] { conn.execute(sql); });
+    std::cout << time([&] { conn.execute(sql).expect(SQLITE_OK); });
     if (query != "q4.3") {
       std::cout << "," << std::flush;
     }

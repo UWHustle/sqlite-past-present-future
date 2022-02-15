@@ -2,13 +2,13 @@
 #include "dbbench/benchmarks/tatp.hpp"
 #include "dbbench/runner.hpp"
 #include "helpers.hpp"
-#include "systems/duckdb/duckdb.hpp"
+#include "duckdb.hpp"
 
 template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 void assert_success(const std::unique_ptr<duckdb::QueryResult> &result) {
-  if (!result->success || result->HasError()) {
+  if (!result->success) {
     throw std::runtime_error(result->error);
   }
 }
