@@ -1,7 +1,7 @@
 #include "cxxopts.hpp"
 #include "dbbench/runner.hpp"
 #include "helpers.hpp"
-#include "systems/duckdb/duckdb.hpp"
+#include "duckdb.hpp"
 
 #include <atomic>
 #include <iostream>

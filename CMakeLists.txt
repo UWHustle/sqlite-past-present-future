@@ -4,6 +4,16 @@ project(sqlite_performance)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
+set(DUCKDB_DIR "" CACHE FILEPATH "Directory containing DuckDB library and header files")
+find_library(
+        DuckDB
+        NAMES duckdb
+        REQUIRED
+        PATHS ${DUCKDB_DIR}
+        NO_DEFAULT_PATH
+)
+message(STATUS "Found DuckDB")
+
 include(FetchContent)
 
 find_package(Threads REQUIRED)
@@ -66,13 +76,6 @@ add_executable(
 )
 target_link_libraries(sqlite3_shell Threads::Threads ${CMAKE_DL_LIBS})
 
-add_library(
-        duckdb
-        src/systems/duckdb/duckdb.cpp
-        src/systems/duckdb/duckdb.hpp
-)
-target_link_libraries(duckdb Threads::Threads ${CMAKE_DL_LIBS})
-
 # SSB executables.
 
 add_subdirectory(src/benchmarks/ssb/dbgen)
@@ -87,8 +90,8 @@ set_target_properties(
 )
 
 add_executable(ssb_duckdb src/benchmarks/ssb/ssb_duckdb.cpp)
-target_include_directories(ssb_duckdb PRIVATE src)
-target_link_libraries(ssb_duckdb cxxopts duckdb ${CMAKE_DL_LIBS})
+target_include_directories(ssb_duckdb PRIVATE src ${DUCKDB_DIR})
+target_link_libraries(ssb_duckdb cxxopts ${DuckDB} ${CMAKE_DL_LIBS})
 set_target_properties(
         ssb_duckdb
         PROPERTIES
@@ -109,8 +112,8 @@ set_target_properties(
 )
 
 add_executable(tatp_duckdb src/benchmarks/tatp/tatp_duckdb.cpp)
-target_include_directories(tatp_duckdb PRIVATE src)
-target_link_libraries(tatp_duckdb cxxopts dbbench_tatp duckdb)
+target_include_directories(tatp_duckdb PRIVATE src ${DUCKDB_DIR})
+target_link_libraries(tatp_duckdb cxxopts dbbench_tatp ${DuckDB})
 set_target_properties(
         tatp_duckdb
         PROPERTIES
@@ -129,8 +132,8 @@ set_target_properties(
 )
 
 add_executable(blob_duckdb src/benchmarks/blob/blob_duckdb.cpp)
-target_include_directories(blob_duckdb PRIVATE src)
-target_link_libraries(blob_duckdb cxxopts dbbench_core duckdb)
+target_include_directories(blob_duckdb PRIVATE src ${DUCKDB_DIR})
+target_link_libraries(blob_duckdb cxxopts dbbench_core ${DuckDB})
 set_target_properties(
         blob_duckdb
         PROPERTIES

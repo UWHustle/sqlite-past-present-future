@@ -1,10 +1,10 @@
 #include "cxxopts.hpp"
 #include "helpers.hpp"
 #include "readfile.hpp"
-#include "systems/duckdb/duckdb.hpp"
+#include "duckdb.hpp"
 
 void assert_success(const std::unique_ptr<duckdb::QueryResult> &result) {
-  if (!result->success || result->HasError()) {
+  if (!result->success) {
     throw std::runtime_error(result->error);
   }
 }
