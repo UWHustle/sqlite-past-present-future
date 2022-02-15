@@ -1,17 +1,28 @@
 # Performance evaluation of SQLite3
 
+## Requirements
+
+* CMake >= 3.16
+* DuckDB 0.3.2 ([instructions](https://duckdb.org/docs/installation/))
+
 ## How to run the benchmarks
 
-First, build the executables:
+First, ensure you have CMake >= 3.16 installed and the DuckDB 0.3.2 library and header files downloaded.
+
+Then, run CMake to configure the project:
 ```
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCMAKE_BUILD_TYPE=Release -DDUCKDB_DIR=/path/to/duckdb
+```
+
+Build the executables:
+```
 cmake --build .
 ```
 Executables for *SSB*, *TATP*, and *Blob* will be placed in their respective directories.
 
-Then, modify the permissions of the scripts:
+Modify the permissions of the scripts:
 ```
 chmod u+x ssb/ssb.sh
 chmod u+x tatp/tatp.sh
