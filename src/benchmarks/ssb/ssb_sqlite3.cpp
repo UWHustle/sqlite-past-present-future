@@ -31,6 +31,9 @@ int main(int argc, char **argv) {
     throw std::runtime_error(sqlite3_errmsg(conn.ptr().get()));
   }
 
+  conn.execute("PRAGMA cache_size=" + result["cache_size"].as<std::string>())
+      .expect(SQLITE_OK);
+
   conn.execute("ANALYZE").expect(SQLITE_OK);
 
   conn.execute("SELECT * FROM lineorder").expect(SQLITE_OK);
