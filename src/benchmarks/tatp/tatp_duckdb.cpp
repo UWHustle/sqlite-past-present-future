@@ -2,7 +2,7 @@
 #include "dbbench/benchmarks/tatp.hpp"
 #include "dbbench/runner.hpp"
 #include "helpers.hpp"
-#include "duckdb.hpp"
+#include "systems/duckdb/duckdb.hpp"
 
 template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;

@@ -1,7 +1,7 @@
 #include "cxxopts.hpp"
 #include "helpers.hpp"
 #include "readfile.hpp"
-#include "duckdb.hpp"
+#include "systems/duckdb/duckdb.hpp"
 
 void assert_success(const std::unique_ptr<duckdb::QueryResult> &result) {
   if (!result->success) {
