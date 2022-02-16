@@ -3,17 +3,16 @@
 ## Requirements
 
 * CMake >= 3.16
-* DuckDB 0.3.2 ([instructions](https://duckdb.org/docs/installation/))
 
 ## How to run the benchmarks
 
-First, ensure you have CMake >= 3.16 installed and the DuckDB 0.3.2 library and header files downloaded.
+First, ensure you have CMake >= 3.16 installed.
 
 Then, run CMake to configure the project:
 ```
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DDUCKDB_DIR=/path/to/duckdb
+cmake .. -DCMAKE_BUILD_TYPE=Release
 ```
 
 Build the executables:
