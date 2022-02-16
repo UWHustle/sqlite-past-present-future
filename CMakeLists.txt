@@ -88,7 +88,7 @@ add_library(
         src/systems/duckdb/duckdb.cpp
         src/systems/duckdb/duckdb.hpp
 )
-target_link_libraries(duckdb Threads::Threads)
+target_link_libraries(duckdb Threads::Threads ${CMAKE_DL_LIBS})
 
 add_executable(
         sqlite3_shell
@@ -108,7 +108,7 @@ target_compile_options(
 add_subdirectory(src/benchmarks/ssb/dbgen)
 
 add_executable(ssb_sqlite3 src/benchmarks/ssb/ssb_sqlite3.cpp)
-target_include_directories(ssb_sqlite3 PRIVATE src)
+target_include_directories(ssb_sqlite3 PRIVATE src src/systems/sqlite)
 target_link_libraries(ssb_sqlite3 cxxopts sqlite3 sqlite3cpp)
 set_target_properties(
         ssb_sqlite3
@@ -117,7 +117,7 @@ set_target_properties(
 )
 
 add_executable(ssb_sqlite3_vdbe_profile src/benchmarks/ssb/ssb_sqlite3.cpp)
-target_include_directories(ssb_sqlite3_vdbe_profile PRIVATE src)
+target_include_directories(ssb_sqlite3_vdbe_profile PRIVATE src src/systems/sqlite)
 target_link_libraries(ssb_sqlite3_vdbe_profile cxxopts sqlite3_vdbe_profile sqlite3cpp)
 set_target_properties(
         ssb_sqlite3_vdbe_profile
@@ -139,7 +139,7 @@ file(COPY src/benchmarks/ssb/sql DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ssb)
 # TATP executables.
 
 add_executable(tatp_sqlite3 src/benchmarks/tatp/tatp_sqlite3.cpp)
-target_include_directories(tatp_sqlite3 PRIVATE src)
+target_include_directories(tatp_sqlite3 PRIVATE src src/systems/sqlite)
 target_link_libraries(tatp_sqlite3 cxxopts dbbench_tatp sqlite3 sqlite3cpp)
 set_target_properties(
         tatp_sqlite3
@@ -159,7 +159,7 @@ set_target_properties(
 # Blob executables.
 
 add_executable(blob_sqlite3 src/benchmarks/blob/blob_sqlite3.cpp)
-target_include_directories(blob_sqlite3 PRIVATE src)
+target_include_directories(blob_sqlite3 PRIVATE src src/systems/sqlite)
 target_link_libraries(blob_sqlite3 cxxopts dbbench_core sqlite3 sqlite3cpp)
 set_target_properties(
         blob_sqlite3
