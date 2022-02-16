@@ -81,6 +81,7 @@ target_compile_options(
         -DSQLITE_OMIT_AUTOINIT
         -DSQLITE_PERFORMANCE_TRACE
         -DVDBE_PROFILE
+        -DSQLITE_HWTIME_USE_INTRINSIC
 )
 
 add_library(
