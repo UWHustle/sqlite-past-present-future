@@ -2,6 +2,7 @@ from collections import defaultdict
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 
 sns.set()
 
@@ -27,4 +28,4 @@ for config in ['vanilla', 'bloom']:
     plt.xlabel('query')
     plt.ylabel('TSC ticks')
     plt.tight_layout()
-    plt.savefig(f'plots/{config}_profile.pdf')
+    plt.savefig(f'{config}_profile.pdf')
