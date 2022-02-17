@@ -11,7 +11,7 @@ for config in ['vanilla', 'bloom']:
     data = {}
     for name in ['1.1', '1.2', '1.3', '2.1', '2.2', '2.3', '3.1', '3.2', '3.3', '3.4', '4.1', '4.2', '4.3']:
         profile = defaultdict(int)
-        with open(f'data/profiles/ssb/{config}/Q{name}.txt', 'r') as f:
+        with open(f'data/ssb/c220g5/profiles/{config}/Q{name}.txt', 'r') as f:
             for line in f:
                 tokens = line.split()
                 profile[tokens[4]] += int(tokens[1])
