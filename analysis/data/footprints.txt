@@ -38,6 +38,16 @@ time: 30 s
 memory: 380 MB
 size of libsqlite3.a: 1.5 MB
 
+ssb.sqlite (SF 5)
+load time from CSV: 82 s
+size: 2.85 GB
+
+tatp.sqlite (SF 1 M)
+size: 520 MB
+
+blob.sqlite (SF 1 M)
+size: 1.85 MB
+
 size of duckdb.cpp & duckdb.hpp: 10.9 MB
 
 g++ -c -Os duckdb.cpp
@@ -49,3 +59,13 @@ g++ -c -O3 duckdb.cpp
 time: 10 m
 memory: 7.60 GB
 size of libduckdb.a: 36.8 MB
+
+ssb.duckdb (SF 5)
+load time from CSV: 100 s
+size: 1.82 GB
+
+tatp.duckdb (SF 1 M)
+size: 270 MB
+
+blob.duckdb (SF 1 M)
+size: 1.01 MB
