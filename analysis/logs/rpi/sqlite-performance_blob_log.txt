@@ -1,0 +1,87 @@
+*** Blob benchmark (scale factor 100000) ***
+Loading data into SQLite3...
+Evaluating SQLite3...
+./blob_sqlite3 --run --size=100000 --mix=0.9
+1,19934.2
+2,19982.5
+3,19878.7
+./blob_sqlite3 --run --size=100000 --mix=0.5
+1,16070.3
+2,16049.3
+3,16197.6
+./blob_sqlite3 --run --size=100000 --mix=0.1
+1,13547
+2,13416.3
+3,13466.3
+Loading data into DuckDB...
+Evaluating DuckDB...
+./blob_duckdb --run --size=100000 --mix=0.9
+1,490.15
+2,664.75
+3,583.75
+./blob_duckdb --run --size=100000 --mix=0.5
+1,142.683
+2,133.117
+3,132.75
+./blob_duckdb --run --size=100000 --mix=0.1
+1,71.8667
+2,68.4667
+3,78.3
+*** Blob benchmark (scale factor 1000000) ***
+Loading data into SQLite3...
+Evaluating SQLite3...
+./blob_sqlite3 --run --size=1000000 --mix=0.9
+1,1091.32
+2,1146.12
+3,1140.13
+./blob_sqlite3 --run --size=1000000 --mix=0.5
+1,1035.27
+2,1044.78
+3,1050.23
+./blob_sqlite3 --run --size=1000000 --mix=0.1
+1,886.467
+2,910.667
+3,877.817
+Loading data into DuckDB...
+Evaluating DuckDB...
+./blob_duckdb --run --size=1000000 --mix=0.9
+1,187.583
+2,172.383
+3,161.667
+./blob_duckdb --run --size=1000000 --mix=0.5
+1,34.7333
+2,34.8
+3,30.7333
+./blob_duckdb --run --size=1000000 --mix=0.1
+1,19.2167
+2,19.0667
+3,20.3833
+*** Blob benchmark (scale factor 10000000) ***
+Loading data into SQLite3...
+Evaluating SQLite3...
+./blob_sqlite3 --run --size=10000000 --mix=0.9
+1,122.367
+2,124.567
+3,120.233
+./blob_sqlite3 --run --size=10000000 --mix=0.5
+1,114.383
+2,114.9
+3,114.05
+./blob_sqlite3 --run --size=10000000 --mix=0.1
+1,109.6
+2,109.3
+3,109.367
+Loading data into DuckDB...
+Evaluating DuckDB...
+./blob_duckdb --run --size=10000000 --mix=0.9
+1,21.4
+2,24.4167
+3,21.4333
+./blob_duckdb --run --size=10000000 --mix=0.5
+1,4.45
+2,4.4
+3,4.68333
+./blob_duckdb --run --size=10000000 --mix=0.1
+1,2.53333
+2,2.56667
+3,2.51667

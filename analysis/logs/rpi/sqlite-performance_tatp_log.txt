@@ -1,0 +1,303 @@
+*** TATP (scale factor 10000) ***
+Loading data into SQLite3...
+Evaluating SQLite3...
+./tatp_sqlite3 --run --records=10000 --journal_mode=DELETE --cache_size=-100000
+1,213.233
+2,215.3
+3,213.1
+./tatp_sqlite3 --run --records=10000 --journal_mode=DELETE --cache_size=-200000
+1,209.067
+2,214.617
+3,204.6
+./tatp_sqlite3 --run --records=10000 --journal_mode=DELETE --cache_size=-500000
+1,214.667
+2,201.717
+3,187.817
+./tatp_sqlite3 --run --records=10000 --journal_mode=DELETE --cache_size=-1000000
+1,207.783
+2,173.3
+3,215.333
+./tatp_sqlite3 --run --records=10000 --journal_mode=DELETE --cache_size=-2000000
+1,205.9
+2,172.017
+3,206.867
+./tatp_sqlite3 --run --records=10000 --journal_mode=DELETE --cache_size=-5000000
+1,192.317
+2,207.933
+3,185.6
+./tatp_sqlite3 --run --records=10000 --journal_mode=TRUNCATE --cache_size=-100000
+1,193.233
+2,178.583
+3,184.533
+./tatp_sqlite3 --run --records=10000 --journal_mode=TRUNCATE --cache_size=-200000
+1,184.167
+2,155.533
+3,194.967
+./tatp_sqlite3 --run --records=10000 --journal_mode=TRUNCATE --cache_size=-500000
+1,186.183
+2,184.65
+3,178.633
+./tatp_sqlite3 --run --records=10000 --journal_mode=TRUNCATE --cache_size=-1000000
+1,186.517
+2,183.217
+3,178.183
+./tatp_sqlite3 --run --records=10000 --journal_mode=TRUNCATE --cache_size=-2000000
+1,182.75
+2,183.217
+3,170.967
+./tatp_sqlite3 --run --records=10000 --journal_mode=TRUNCATE --cache_size=-5000000
+1,177.883
+2,175.05
+3,197.117
+./tatp_sqlite3 --run --records=10000 --journal_mode=WAL --cache_size=-100000
+1,5677.3
+2,6347.38
+3,5425.33
+./tatp_sqlite3 --run --records=10000 --journal_mode=WAL --cache_size=-200000
+1,6218.22
+2,5173.52
+3,5548.85
+./tatp_sqlite3 --run --records=10000 --journal_mode=WAL --cache_size=-500000
+1,5366.68
+2,5349.95
+3,5292.62
+./tatp_sqlite3 --run --records=10000 --journal_mode=WAL --cache_size=-1000000
+1,5291.55
+2,6514.9
+3,5307.33
+./tatp_sqlite3 --run --records=10000 --journal_mode=WAL --cache_size=-2000000
+1,5315.05
+2,5353.72
+3,5284.48
+./tatp_sqlite3 --run --records=10000 --journal_mode=WAL --cache_size=-5000000
+1,5322.55
+2,5305.72
+3,5396.02
+Loading data into DuckDB...
+Evaluating DuckDB...
+./tatp_duckdb --run --records=10000 --memory_limit=100MB
+1,294.55
+2,290.217
+3,268.35
+./tatp_duckdb --run --records=10000 --memory_limit=200MB
+1,273.85
+2,290.5
+3,255.033
+./tatp_duckdb --run --records=10000 --memory_limit=500MB
+1,291.383
+2,293.217
+3,295.967
+./tatp_duckdb --run --records=10000 --memory_limit=1GB
+1,254.133
+2,294.333
+3,295.433
+./tatp_duckdb --run --records=10000 --memory_limit=2GB
+1,287.067
+2,254.6
+3,292.7
+./tatp_duckdb --run --records=10000 --memory_limit=5GB
+1,287.533
+2,290.467
+3,262.317
+*** TATP (scale factor 100000) ***
+Loading data into SQLite3...
+Evaluating SQLite3...
+./tatp_sqlite3 --run --records=100000 --journal_mode=DELETE --cache_size=-100000
+1,207.233
+2,186.117
+3,162.4
+./tatp_sqlite3 --run --records=100000 --journal_mode=DELETE --cache_size=-200000
+1,195.15
+2,185.1
+3,169.633
+./tatp_sqlite3 --run --records=100000 --journal_mode=DELETE --cache_size=-500000
+1,206.983
+2,181.883
+3,183.367
+./tatp_sqlite3 --run --records=100000 --journal_mode=DELETE --cache_size=-1000000
+1,196.483
+2,180.833
+3,155.667
+./tatp_sqlite3 --run --records=100000 --journal_mode=DELETE --cache_size=-2000000
+1,191.083
+2,200.15
+3,168.9
+./tatp_sqlite3 --run --records=100000 --journal_mode=DELETE --cache_size=-5000000
+1,172.733
+2,198.25
+3,191.717
+./tatp_sqlite3 --run --records=100000 --journal_mode=TRUNCATE --cache_size=-100000
+1,140.35
+2,154.267
+3,145.3
+./tatp_sqlite3 --run --records=100000 --journal_mode=TRUNCATE --cache_size=-200000
+1,168.35
+2,139.033
+3,171.567
+./tatp_sqlite3 --run --records=100000 --journal_mode=TRUNCATE --cache_size=-500000
+1,149.533
+2,160.15
+3,182.067
+./tatp_sqlite3 --run --records=100000 --journal_mode=TRUNCATE --cache_size=-1000000
+1,133.667
+2,149.05
+3,165.9
+./tatp_sqlite3 --run --records=100000 --journal_mode=TRUNCATE --cache_size=-2000000
+1,166.583
+2,162.8
+3,133.483
+./tatp_sqlite3 --run --records=100000 --journal_mode=TRUNCATE --cache_size=-5000000
+1,160.533
+2,180.1
+3,149.367
+./tatp_sqlite3 --run --records=100000 --journal_mode=WAL --cache_size=-100000
+1,3532.42
+2,4193.17
+3,3386.87
+./tatp_sqlite3 --run --records=100000 --journal_mode=WAL --cache_size=-200000
+1,4193.5
+2,3458.93
+3,3519.28
+./tatp_sqlite3 --run --records=100000 --journal_mode=WAL --cache_size=-500000
+1,3389.38
+2,3532.75
+3,3651.4
+./tatp_sqlite3 --run --records=100000 --journal_mode=WAL --cache_size=-1000000
+1,3499.28
+2,3605.07
+3,4164.27
+./tatp_sqlite3 --run --records=100000 --journal_mode=WAL --cache_size=-2000000
+1,3618.87
+2,3396.92
+3,3402.67
+./tatp_sqlite3 --run --records=100000 --journal_mode=WAL --cache_size=-5000000
+1,3582.47
+2,3855.88
+3,3334.45
+Loading data into DuckDB...
+Evaluating DuckDB...
+./tatp_duckdb --run --records=100000 --memory_limit=100MB
+1,85.6667
+2,84.1833
+3,86.8833
+./tatp_duckdb --run --records=100000 --memory_limit=200MB
+1,83.6
+2,82.8667
+3,83.55
+./tatp_duckdb --run --records=100000 --memory_limit=500MB
+1,83.8833
+2,82.5167
+3,70.4667
+./tatp_duckdb --run --records=100000 --memory_limit=1GB
+1,81.8333
+2,81.05
+3,81.6
+./tatp_duckdb --run --records=100000 --memory_limit=2GB
+1,79.6333
+2,79.3
+3,80.8667
+./tatp_duckdb --run --records=100000 --memory_limit=5GB
+1,79.5333
+2,67.85
+3,78.3167
+*** TATP (scale factor 1000000) ***
+Loading data into SQLite3...
+Evaluating SQLite3...
+./tatp_sqlite3 --run --records=1000000 --journal_mode=DELETE --cache_size=-100000
+1,204.983
+2,163.117
+3,173
+./tatp_sqlite3 --run --records=1000000 --journal_mode=DELETE --cache_size=-200000
+1,191.15
+2,180.9
+3,152.2
+./tatp_sqlite3 --run --records=1000000 --journal_mode=DELETE --cache_size=-500000
+1,179.733
+2,178.1
+3,171
+./tatp_sqlite3 --run --records=1000000 --journal_mode=DELETE --cache_size=-1000000
+1,206.283
+2,168.15
+3,172.8
+./tatp_sqlite3 --run --records=1000000 --journal_mode=DELETE --cache_size=-2000000
+1,177.267
+2,162.683
+3,164.917
+./tatp_sqlite3 --run --records=1000000 --journal_mode=DELETE --cache_size=-5000000
+1,189.95
+2,167.117
+3,162.367
+./tatp_sqlite3 --run --records=1000000 --journal_mode=TRUNCATE --cache_size=-100000
+1,139.35
+2,165.283
+3,136.667
+./tatp_sqlite3 --run --records=1000000 --journal_mode=TRUNCATE --cache_size=-200000
+1,144.7
+2,148.967
+3,155.9
+./tatp_sqlite3 --run --records=1000000 --journal_mode=TRUNCATE --cache_size=-500000
+1,131.3
+2,148.667
+3,163.9
+./tatp_sqlite3 --run --records=1000000 --journal_mode=TRUNCATE --cache_size=-1000000
+1,129.633
+2,181.233
+3,144.333
+./tatp_sqlite3 --run --records=1000000 --journal_mode=TRUNCATE --cache_size=-2000000
+1,144.583
+2,169.483
+3,137.717
+./tatp_sqlite3 --run --records=1000000 --journal_mode=TRUNCATE --cache_size=-5000000
+1,164.533
+2,136.35
+3,158.25
+./tatp_sqlite3 --run --records=1000000 --journal_mode=WAL --cache_size=-100000
+1,2296.77
+2,2357.72
+3,2832.38
+./tatp_sqlite3 --run --records=1000000 --journal_mode=WAL --cache_size=-200000
+1,2872.72
+2,2156.58
+3,2789.45
+./tatp_sqlite3 --run --records=1000000 --journal_mode=WAL --cache_size=-500000
+1,2536.75
+2,1811
+3,2426.42
+./tatp_sqlite3 --run --records=1000000 --journal_mode=WAL --cache_size=-1000000
+1,2105.7
+2,2863.67
+3,2036.35
+./tatp_sqlite3 --run --records=1000000 --journal_mode=WAL --cache_size=-2000000
+1,2236.2
+2,2740.4
+3,1920.67
+./tatp_sqlite3 --run --records=1000000 --journal_mode=WAL --cache_size=-5000000
+1,2369.07
+2,2060.5
+3,2165.17
+Loading data into DuckDB...
+Evaluating DuckDB...
+./tatp_duckdb --run --records=1000000 --memory_limit=100MB
+1,8.66667
+2,8
+3,8.91667
+./tatp_duckdb --run --records=1000000 --memory_limit=200MB
+1,10.0333
+2,10.2833
+3,10.6833
+./tatp_duckdb --run --records=1000000 --memory_limit=500MB
+1,10.65
+2,10.2167
+3,11.2333
+./tatp_duckdb --run --records=1000000 --memory_limit=1GB
+1,10.95
+2,10.5833
+3,10.55
+./tatp_duckdb --run --records=1000000 --memory_limit=2GB
+1,10.3667
+2,9.71667
+3,11.3667
+./tatp_duckdb --run --records=1000000 --memory_limit=5GB
+1,10.4833
+2,11.1
+3,10.6
