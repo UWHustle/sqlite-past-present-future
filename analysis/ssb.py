@@ -9,8 +9,10 @@ sns.set()
 
 def plot(bloom=True):
     for hw in hardware:
+        sf = 1 if hw == 'rpi' else 5
+        cs = '1 GB' if hw == 'rpi' else '5 GB'
         df = pd.read_csv(f'data/ssb/{hw}.csv')
-        df = df[(df.cache_size == '1 GB') & (df['scale'] == 1)]
+        df = df[(df.cache_size == cs) & (df['scale'] == sf)]
         df = df[~((df.system == 'duckdb') & (df.threads == 2))]
         df.loc[(df.system == 'duckdb') & (df['threads'] == 4), 'system'] = 'duckdb_mt'
         df.loc[(df.system == 'sqlite') & df['bloom_filter'], 'system'] = 'sqlite_bloom'
