@@ -34,7 +34,7 @@ def plot(bloom=True):
               .reset_index())
 
         if bloom:
-            print('speedup:', df['mean', 'sqlite'].sum() / df['mean', 'sqlite_bloom'].sum())
+            print(df['mean', 'sqlite'].sum(), df['mean', 'sqlite_bloom'].sum(), df['mean', 'duckdb'].sum())
 
         err_lo = df['mean'] - df['min']
         err_hi = df['max'] - df['mean']
