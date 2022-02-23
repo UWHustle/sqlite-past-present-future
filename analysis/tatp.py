@@ -9,7 +9,7 @@ sns.set_palette('colorblind')
 
 for hw in hardware:
     df = pd.read_csv(f'data/tatp/{hw}.csv')
-    df = (df[df['cache_size'] == '1 GB']
+    df = (df
           .groupby(['records', 'system'], sort=False)[['throughput']]
           .agg(['mean', 'min', 'max'])
           .unstack()
@@ -24,8 +24,8 @@ for hw in hardware:
         y='mean',
         yerr=[[err_lo[s], err_hi[s]] for s in ['sqlite_WAL', 'sqlite_DELETE', 'duckdb']],
         logy=True,
-        ylim=(1, 2e6),
-        yticks=[1e1, 1e2, 1e3, 1e4, 1e5],
+        ylim=(2, 1.5e5),
+        yticks=[1e1, 1e2, 1e3, 1e4],
         rot=0,
         width=0.63,
         figsize=(5.8, 2.5)
