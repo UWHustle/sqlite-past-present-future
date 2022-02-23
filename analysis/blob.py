@@ -58,5 +58,5 @@ for hw in hardware:
         plt.xlabel('Read percentage')
         plt.ylabel('Throughput (TPS)')
         plt.legend(labels=['SQLite-WAL', 'SQLite-DELETE', 'DuckDB', 'Filesystem'], ncol=2, loc='upper center')
-        plt.subplots_adjust(left=0.19, right=0.99, top=0.98, bottom=0.24)
-        plt.savefig(f'plots/blob_{size}_{hw}.pdf')
+        plt.subplots_adjust(left=0.14, right=0.99, top=0.98, bottom=0.2)
+        plt.savefig(f'plots/blob_{size}_{hw}.pdf'.replace(' ', '_'))
