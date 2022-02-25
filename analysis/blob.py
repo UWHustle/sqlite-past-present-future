@@ -7,7 +7,10 @@ from util import hardware
 pd.set_option('display.max_columns', None)
 
 sns.set()
-sns.set_palette('colorblind')
+
+palette = sns.color_palette('colorblind')
+palette[1], palette[2] = palette[2], palette[1]
+sns.set_palette(palette)
 
 for hw in hardware:
     for size in ['100 KB', '10 MB']:

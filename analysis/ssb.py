@@ -5,10 +5,14 @@ import seaborn as sns
 from util import hardware, queries
 
 sns.set()
-sns.set_palette('colorblind')
 
 
 def plot(bloom=True):
+    palette = sns.color_palette('colorblind')
+    if bloom:
+        palette[1], palette[2] = palette[2], palette[1]
+    sns.set_palette(palette)
+
     for hw in hardware:
         sf = 1 if hw == 'rpi' else 5
         df = pd.read_csv(f'data/ssb/{hw}.csv')
@@ -48,17 +52,16 @@ def plot(bloom=True):
             yerr=[[err_lo[s], err_hi[s]] for s in system_list],
             logy=True,
             yticks=[1e2, 1e3, 1e4],
-            ylim=(6e1, 1e5),
+            ylim=(6e1, 1.6e5),
             rot=0,
-            width=0.92 if bloom else 0.75,
+            width=0.85 if bloom else 0.75,
             figsize=(12.3, 2.5)
         )
 
         for patch in ax.patches:
             ax.annotate(
                 '{:.0e}'.format(patch.get_height()).replace('+0', ''),
-                (patch.get_x() + 0.5 * patch.get_width(), 0.8 * patch.get_height()),
-                color='white',
+                (patch.get_x() + 0.5 * patch.get_width(), 1.85 * patch.get_height()),
                 alpha=0.8,
                 size='small',
                 ha='center',
@@ -69,7 +72,7 @@ def plot(bloom=True):
         plt.xlabel('Query')
         plt.ylabel('Latency (ms)')
         plt.legend(
-            labels=['SQLite', 'SQLite-Bloom', 'DuckDB'] if bloom else ['SQLite', 'DuckDB'],
+            labels=['SQLite', 'SQLite-LIP', 'DuckDB'] if bloom else ['SQLite', 'DuckDB'],
             ncol=3,
             loc='upper center'
         )

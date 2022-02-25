@@ -5,7 +5,11 @@ import seaborn as sns
 from util import hardware
 
 sns.set()
-sns.set_palette('colorblind')
+
+
+palette = sns.color_palette('colorblind')
+palette[1], palette[2] = palette[2], palette[1]
+sns.set_palette(palette)
 
 for hw in hardware:
     df = pd.read_csv(f'data/tatp/{hw}.csv')
@@ -24,7 +28,7 @@ for hw in hardware:
         y='mean',
         yerr=[[err_lo[s], err_hi[s]] for s in ['sqlite_WAL', 'sqlite_DELETE', 'duckdb']],
         logy=True,
-        ylim=(2, 1.5e5),
+        ylim=(2, 5e5),
         yticks=[1e1, 1e2, 1e3, 1e4],
         rot=0,
         width=0.63,
@@ -34,8 +38,8 @@ for hw in hardware:
     for patch in ax.patches:
         ax.annotate(
             '{:.0e}'.format(patch.get_height()).replace('+0', ''),
-            (patch.get_x() + 0.5 * patch.get_width(), 0.65 * patch.get_height()),
-            color='white',
+            (patch.get_x() + 0.5 * patch.get_width(), 2.8 * patch.get_height()),
+            # color='white',
             alpha=0.8,
             size='small',
             ha='center',

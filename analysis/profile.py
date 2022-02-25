@@ -40,10 +40,10 @@ for config in ['vanilla', 'bloom']:
         kind='bar',
         stacked=True,
         ylim=(0, 6e10) if config == 'vanilla' else (0, 2e10),
-        yticks=[0, 1e10, 2e10, 3e10, 4e10] if config == 'vanilla' else [0, 0.5e10, 1e10, 1.5e10],
+        yticks=[0, 1e10, 2e10, 3e10, 4e10] if config == 'vanilla' else [0, 1e10],
         rot=0,
         width=0.6,
-        figsize=(5.8, 2.7)
+        figsize=(5.8, 3)
     )
 
     plt.grid(False, axis='x')
