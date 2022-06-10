@@ -1,10 +1,12 @@
 from collections import defaultdict
 import pandas as pd
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from util import queries
 
+mpl.rc('pdf', fonttype=42)
 sns.set()
 
 for config in ['vanilla', 'bloom']:

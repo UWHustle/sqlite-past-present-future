@@ -1,9 +1,11 @@
 import pandas as pd
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from util import hardware, queries
 
+mpl.rc('pdf', fonttype=42)
 sns.set()
 
 
@@ -49,7 +51,7 @@ def plot(bloom=True):
             kind='bar',
             x='query',
             y='mean',
-            yerr=[[err_lo[s], err_hi[s]] for s in system_list],
+            # yerr=[[err_lo[s], err_hi[s]] for s in system_list],
             logy=True,
             yticks=[1e2, 1e3, 1e4],
             ylim=(6e1, 1.6e5),

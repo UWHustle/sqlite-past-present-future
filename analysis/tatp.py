@@ -1,11 +1,12 @@
 import pandas as pd
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from util import hardware
 
+mpl.rc('pdf', fonttype=42)
 sns.set()
-
 
 palette = sns.color_palette('colorblind')
 palette[1], palette[2] = palette[2], palette[1]
@@ -26,7 +27,7 @@ for hw in hardware:
     ax = df.plot.bar(
         x='records',
         y='mean',
-        yerr=[[err_lo[s], err_hi[s]] for s in ['sqlite_WAL', 'sqlite_DELETE', 'duckdb']],
+        # yerr=[[err_lo[s], err_hi[s]] for s in ['sqlite_WAL', 'sqlite_DELETE', 'duckdb']],
         logy=True,
         ylim=(2, 5e5),
         yticks=[1e1, 1e2, 1e3, 1e4],

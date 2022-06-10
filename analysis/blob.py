@@ -1,9 +1,11 @@
 import pandas as pd
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from util import hardware
 
+mpl.rc('pdf', fonttype=42)
 pd.set_option('display.max_columns', None)
 
 sns.set()
@@ -42,7 +44,7 @@ for hw in hardware:
             kind='bar',
             x='mix',
             y='mean',
-            yerr=[[err_lo[s], err_hi[s]] for s in ['sqlite-WAL', 'sqlite-DELETE', 'duckdb', 'filesystem']],
+            # yerr=[[err_lo[s], err_hi[s]] for s in ['sqlite-WAL', 'sqlite-DELETE', 'duckdb', 'filesystem']],
             ylim=ylim,
             rot=0,
             width=0.85,
@@ -72,7 +74,8 @@ for hw in hardware:
 
             ax.annotate(
                 label,
-                (patch.get_x() + 0.5 * patch.get_width(), patch.get_height() + h + d),
+                # (patch.get_x() + 0.5 * patch.get_width(), patch.get_height() + h + d),
+                (patch.get_x() + 0.5 * patch.get_width(), patch.get_height() + h),
                 # color='white',
                 alpha=0.8,
                 size='small',
