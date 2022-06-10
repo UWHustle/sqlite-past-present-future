@@ -1,4 +1,6 @@
-# Performance evaluation of SQLite3
+# SQLite: Past, Present, and Future
+
+Performance evaluation and optimization of SQLite. Accompanying source code for the VLDB 2022 paper.
 
 ## Requirements
 
